@@ -1,0 +1,45 @@
+name: Feature proposal
+description: Propose a capability that fits the documented PIMS scope.
+title: "[Feature]: "
+labels: ["type:feature", "status:needs-decision"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the information-management problem before proposing a UI/control.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Likely area
+      options:
+        - Project catalog
+        - Status / review
+        - Requirements
+        - References
+        - Search
+        - Import / export
+        - Backup / recovery
+        - Milestones / decisions / risks
+        - Product relation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include doing nothing or using existing functionality where relevant.
+  - type: textarea
+    id: architecture
+    attributes:
+      label: Architecture / dependency impact
+      description: New packages, schema changes, provider dependencies, file-format changes, etc.

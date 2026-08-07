@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a defect in behaviour that has actually been implemented.
+title: "[Bug]: "
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not use this form for undisclosed security vulnerabilities. See SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Release version or commit hash.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Use synthetic data. Do not attach real databases or secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Windows version, DPI/scaling, .NET/runtime details if relevant.
+  - type: textarea
+    id: risk
+    attributes:
+      label: Data-loss / security risk
+      description: State whether this could affect data integrity, backup/restore or security.

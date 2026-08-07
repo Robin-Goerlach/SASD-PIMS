@@ -1,0 +1,31 @@
+{
+  "repository_name": "SASD-PIMS",
+  "description": "Local-first Windows desktop application under development for managing SASD projects, products, requirements, milestones, decisions, risks and related references. Built with .NET 10, Windows Forms and SQLite, with emphasis on traceability, low operational overhead, data integrity and reliable backup/restore.",
+  "description_character_count": 309,
+  "recommended_topics": [
+    "sasd",
+    "pims",
+    "project-information-management",
+    "requirements-management",
+    "traceability",
+    "decision-log",
+    "risk-management",
+    "local-first",
+    "offline-first",
+    "desktop-app",
+    "windows",
+    "winforms",
+    "dotnet",
+    "dotnet-10",
+    "csharp",
+    "sqlite",
+    "ef-core"
+  ],
+  "license_recommendation": {
+    "public_open_source": "Apache-2.0",
+    "current_action": "Do not add LICENSE until public/proprietary distribution decision is approved."
+  },
+  "default_branch": "main",
+  "merge_strategy": "squash",
+  "roadmap_baseline": "0.0.1-internal -> 0.1.0 -> 0.2.0 -> 0.3.0 -> 0.4.0 -> 0.5.0 MVP -> 0.6.0 -> 0.7.0 -> 0.8.0 -> 0.9.0 -> 1.0.0"
+}

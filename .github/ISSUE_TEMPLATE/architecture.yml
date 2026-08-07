@@ -1,0 +1,39 @@
+name: Architecture decision
+description: Propose a change that may require an ADR.
+title: "[Architecture]: "
+labels: ["type:architecture", "status:needs-decision"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and problem
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Proposed decision
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+    validations:
+      required: true
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Positive and negative consequences
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility and rollback
+      description: Database, export, backup, deployment or dependency implications.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Required proof / PoC
+      description: What evidence would justify accepting the change?
