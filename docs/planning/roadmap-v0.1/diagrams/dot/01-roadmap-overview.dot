@@ -1,0 +1,14 @@
+digraph G { rankdir=LR; graph [bgcolor="transparent",pad=0.2,nodesep=0.22,ranksep=0.35]; node [shape=box,style="rounded,filled",fillcolor="#EAF2F8",color="#2F5D7C",fontname="DejaVu Sans",fontsize=9]; edge [color="#567A93"]; P0[label="P0
+Spezifikationen",fillcolor="#FCF3CF"];P1[label="P1
+Vertikalschnitt",fillcolor="#FCF3CF"];V01[label="0.1
+Projektkatalog"];V02[label="0.2
+Status & Blockaden"];V03[label="0.3
+Anforderungen & Referenzen"];V04[label="0.4
+Suche, Audit, Export"];MVP[label="0.5
+MVP Pilot",fillcolor="#D5F5E3",penwidth=2];V06[label="0.6
+Governanceobjekte"];V07[label="0.7
+Produktbezug"];V08[label="0.8
+Feature Complete"];V09[label="0.9
+Release Candidate"];V10[label="1.0
+Stable",fillcolor="#D6EAF8",penwidth=2];V11[label="1.1+
+optional",style="rounded,dashed,filled",fillcolor="#F4ECF7"];P0->P1->V01->V02->V03->V04->MVP->V06->V07->V08->V09->V10;V10->V11[style=dashed]; }

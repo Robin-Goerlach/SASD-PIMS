@@ -1,0 +1,11 @@
+flowchart LR
+  UI[UI] --> UC[Use Case]
+  UC --> VAL[Validierung]
+  VAL --> TX[Transaktion]
+  TX --> DB[(SQLite)]
+  DB --> BAK[Verifiziertes Backup]
+  BAK --> CAT[Backup-Katalog]
+  CAT --> STG[Restore-Staging]
+  STG --> CHECK[Integritaetspruefung]
+  CHECK --> SWAP[Atomarer Austausch]
+  SWAP --> DB

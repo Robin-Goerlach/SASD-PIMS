@@ -1,0 +1,4 @@
+digraph G { rankdir=LR; graph [bgcolor="transparent",pad=0.2,nodesep=0.2]; node [shape=box,style="rounded,filled",fillcolor="#EAF2F8",color="#2F5D7C",fontname="DejaVu Sans",fontsize=8.5]; edge [color="#567A93"];BASE[label="Baseline"];DBS[label="Datenbank-
+spezifikation",fillcolor="#FCF3CF"];UIS[label="UI-
+spezifikation",fillcolor="#FCF3CF"];TS[label="Test-
+spezifikation",fillcolor="#FCF3CF"];VS[label="Vertikalschnitt",fillcolor="#D5F5E3"];CATALOG[label="0.1"];STATUS[label="0.2"];REQ[label="0.3"];SEARCH[label="0.4"];RECOVERY[label="0.5 MVP",fillcolor="#D5F5E3"];GOV[label="0.6/0.7"];HARD[label="0.8/0.9"];ONE[label="1.0",fillcolor="#D6EAF8"];BASE->{DBS UIS TS};DBS->VS;UIS->VS;TS->VS;VS->CATALOG->STATUS->REQ->SEARCH->RECOVERY->GOV->HARD->ONE;}

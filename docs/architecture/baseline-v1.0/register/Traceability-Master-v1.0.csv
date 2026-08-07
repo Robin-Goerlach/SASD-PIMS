@@ -1,0 +1,11 @@
+﻿Architekturthema;Masterabschnitt;Detailband;Nachweis;Status
+Systemgrenze und Offline-first;4, 5;1, 8;Systemkontext, Offline-Systemtest;Baseline festgelegt
+Projekt-/Schichtstruktur;6;1, 6, 7;Architekturtests und Vertikalschnitt;Nachweis offen
+Fachkonzepte und Aggregate;7;4;Domain-Tests, Persistenz-Round-trip;Baseline festgelegt
+Persistenz und Migration;8;2, 3, 5, 7;SQLite-Integrations-, Migrations- und Restoretests;Nachweis offen
+UI und Barrierefreiheit;9;2, 6, 7;DPI-, Tastatur- und A11y-Protokoll;Nachweis offen
+Logging und Diagnose;10;2, 5, 7;Redaktions-, Fehlercode- und Supportpakettests;Provider offen
+Backup und Recovery;11;2, 5, 7;Fault Injection und Staging-Restore;Nachweis offen
+Test, Build und Release;12;3, 6, 7;Qualitaetsgates QG-01 bis QG-10;Baseline festgelegt
+Externe Referenzen und Adapter;13;8;Referenz-Round-trip, Offline- und Adaptertests;MVP-Baseline festgelegt
+Governance, ADR und technische Schuld;14, 15;6, 7;Registerpflege und Evidenzmanifest;Baseline festgelegt

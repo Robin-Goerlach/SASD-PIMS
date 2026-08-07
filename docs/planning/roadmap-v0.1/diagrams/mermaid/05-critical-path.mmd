@@ -1,0 +1,15 @@
+flowchart LR
+  BASE[Baseline] --> DBS[Datenbankspezifikation]
+  BASE --> UIS[UI-Spezifikation]
+  BASE --> TS[Testspezifikation]
+  DBS --> VS[Vertikalschnitt]
+  UIS --> VS
+  TS --> VS
+  VS --> CATALOG[0.1]
+  CATALOG --> STATUS[0.2]
+  STATUS --> REQ[0.3]
+  REQ --> SEARCH[0.4]
+  SEARCH --> RECOVERY[0.5 MVP]
+  RECOVERY --> GOV[0.6/0.7]
+  GOV --> HARD[0.8/0.9]
+  HARD --> ONE[1.0]

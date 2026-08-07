@@ -1,0 +1,48 @@
+# Repository-wide text/binary policy.
+# Keep source and documentation stable across Windows, Linux and WSL.
+
+* text=auto
+
+# Source, project and documentation files use LF in Git and working trees.
+*.cs       text eol=lf
+*.csx      text eol=lf
+*.csproj   text eol=lf
+*.sln      text eol=lf
+*.slnx     text eol=lf
+*.props    text eol=lf
+*.targets  text eol=lf
+*.resx     text eol=lf
+*.json     text eol=lf
+*.jsonc    text eol=lf
+*.xml      text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.md       text eol=lf
+*.txt      text eol=lf
+*.csv      text eol=lf
+*.mmd      text eol=lf
+*.dot      text eol=lf
+*.sh       text eol=lf
+*.csv      text eol=lf
+
+# Native Windows command scripts keep CRLF.
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+
+# PowerShell supports LF; keeping it LF avoids needless cross-platform churn.
+*.ps1      text eol=lf
+
+# Binary formats must never receive line-ending conversion.
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.webp     binary
+*.ico      binary
+*.pdf      binary
+*.docx     binary
+*.xlsx     binary
+*.zip      binary
+*.db       binary
+*.sqlite   binary
+*.sqlite3  binary

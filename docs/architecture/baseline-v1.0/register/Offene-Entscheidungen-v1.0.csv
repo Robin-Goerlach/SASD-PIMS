@@ -1,0 +1,13 @@
+﻿ID;Entscheidung;Status;Faellig;Bezug;Kriterium
+OD-001;Konkreter Loggingprovider;Open;Vor erster Diagnosefunktion;ADR-0009;Microsoft.Extensions.Logging mit einfachem Datei-Provider gegen Serilog vergleichen.
+OD-002;Installer- und Updateverfahren;Open;Vor erstem extern installierbaren Release;ADR-0010, ADR-0028;Installations-, Update-, Runtime- und Rollback-PoC.
+OD-003;Volltextsuche mit SQLite FTS;Open;Nach realistischem Suchdaten-PoC;ADR-0036;Suchqualitaet, Migrationsaufwand und Indexkonsistenz messen.
+OD-004;Versionierte Report-Snapshots;Open;Vor verbindlichen Berichten;ADR-0037;Reproduzierbarkeit gegen Speicher- und Wartungsaufwand bewerten.
+OD-005;Markdownvorschau und Diagrammkomponenten;Open;Nur bei priorisiertem Bedarf;ADR-0054;Markdig/WebView2 bzw. ScottPlot mit Security, DPI, A11y und Deployment pruefen.
+OD-006;Performance-Schwellenwerte;Open;Nach stabilem Vertikalschnitt;ADR-0073;Messbaselines mit realistischen synthetischen Daten festlegen.
+OD-007;Verbindliche MVP-Referenztypen;Open;Vor Referenzmodul;ADR-0079 bis ADR-0080;GitHub, Chat, Web, Datei und Dokument fachlich priorisieren.
+OD-008;Lokale Dateien nur verlinken oder auch anhaengen;Open;Vor Datenbankspezifikation;Teil 8 OD-INT-02;Portabilitaet, Backup, Speicher und Datenschutz entscheiden.
+OD-009;Relative Pfade im Projektarbeitsbereich;Open;Vor Dateireferenz-PoC;Teil 8 OD-INT-03;Umzug und Repository-Portabilitaet testen.
+OD-010;CSV-Import-/Exportumfang;Open;Vor oeffentlichem Austauschformat;ADR-0090;Konkrete Anwendungsfaelle, Encoding, Mapping und Formula Injection festlegen.
+OD-011;Aufbewahrungs- und Loeschfristen;Open;Vor Archivierungsfeature;TD-012;Fachliche und datenschutzbezogene Regeln festlegen.
+OD-012;Aktiver GitHub-Metadatenadapter;Deferred;Nach Nutzung manueller Referenzen;ADR-0092;PoC mit Nutzen, Rate Limits, Secrets, Lizenz, Security und Exit-Plan.

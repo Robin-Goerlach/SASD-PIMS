@@ -1,0 +1,9 @@
+flowchart TD
+  WF[WinForms] --> APP[Application]
+  WF --> DOM[Domain]
+  INF[Infrastructure] --> APP
+  INF --> DOM
+  APP --> DOM
+  DOM -. kennt nicht .-> WF
+  DOM -. kennt nicht .-> INF
+  APP -. kennt keine Provider-Typen .-> EXT[Externe Bibliotheken]

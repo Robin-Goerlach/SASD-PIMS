@@ -1,0 +1,11 @@
+flowchart TB
+  P[PIMS-Kern] --> REF[Typisierte Referenzen]
+  REF --> OPEN[Validierender Opener]
+  P --> PORT[Providerneutrale Ports]
+  ADP[Optionale Adapter] --> PORT
+  ADP --> G[GitHub API]
+  ADP --> M[Metadatenquellen]
+  P --> IMP[Import-Pipeline]
+  P --> EXP[Versionierter Export]
+  SEC[Secret Store] --> ADP
+  OFF[Offline-Betrieb] --> P

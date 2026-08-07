@@ -1,0 +1,9 @@
+flowchart LR
+  READY[Definition of Ready] --> BUILD[Build & Architektur]
+  BUILD --> UNIT[Domain/Application Tests]
+  UNIT --> INT[SQLite/Migration/Export]
+  INT --> REC[Backup/Restore/Fault Injection]
+  REC --> UX[DPI/Tastatur/A11y]
+  UX --> SEC[Security/Lizenz/SBOM]
+  SEC --> PILOT[Pilot & Abnahme]
+  PILOT --> RELEASE[Releasefreigabe]

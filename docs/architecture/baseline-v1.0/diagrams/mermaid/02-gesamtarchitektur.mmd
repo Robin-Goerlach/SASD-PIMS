@@ -1,0 +1,12 @@
+flowchart LR
+  U[Benutzer] --> UI[WinForms UI]
+  UI --> APP[Application Use Cases]
+  APP --> DOM[Domain]
+  APP --> PORTS[Ports]
+  INF[Infrastructure] --> PORTS
+  INF --> DB[(SQLite)]
+  INF --> FS[Dateisystem / Backups / Exporte]
+  INF --> EXT[Optionale externe Adapter]
+  EXT --> GH[GitHub]
+  EXT --> WEB[Web / Dokumente]
+  EXT --> CHAT[Chat-Referenzen]

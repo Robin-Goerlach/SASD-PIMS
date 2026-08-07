@@ -1,0 +1,11 @@
+flowchart TB
+  S[Stufe fertig entwickelt] --> T{Automatisierte Tests grün?}
+  T -- nein --> FIX[Fehler beheben]
+  FIX --> T
+  T -- ja --> M{Manuelle Gates bestanden?}
+  M -- nein --> FIX2[UI, A11y, Betrieb oder Doku korrigieren]
+  FIX2 --> M
+  M -- ja --> P{Pilot/Abnahme ohne Blocker?}
+  P -- nein --> TRIAGE[Defekttriage oder Scope reduzieren]
+  TRIAGE --> P
+  P -- ja --> E[Evidenzpaket & Releasefreigabe]

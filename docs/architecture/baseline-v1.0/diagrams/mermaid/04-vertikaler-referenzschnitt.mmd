@@ -1,0 +1,17 @@
+sequenceDiagram
+  actor U as Benutzer
+  participant F as Projektformular
+  participant UC as Use Case
+  participant D as Domain
+  participant R as Repository
+  participant DB as SQLite
+  U->>F: Projektdaten eingeben
+  F->>UC: CreateOrUpdateProjectCommand
+  UC->>D: validieren und Zustandsaenderung
+  D-->>UC: gueltiges Ergebnis
+  UC->>R: speichern
+  R->>DB: Transaktion
+  DB-->>R: Commit
+  R-->>UC: Version / ID
+  UC-->>F: typisiertes Result
+  F-->>U: gespeicherter Zustand

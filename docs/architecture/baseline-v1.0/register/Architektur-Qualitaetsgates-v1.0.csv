@@ -1,0 +1,11 @@
+﻿ID;Gate;Kriterium;Prüfart;Wirkung
+QG-01;Reproduzierbarer Build;Clean restore/build ohne lokale Sonderkonfiguration;automatisch;blockierend
+QG-02;Unit Tests;Alle Domain- und Application-Tests erfolgreich;automatisch;blockierend
+QG-03;Architekturtests;"Keine verbotene Projektreferenz; Domain kennt weder EF Core noch WinForms";automatisch;blockierend
+QG-04;Integration;Persistenz-, Transaktions- und Round-trip-Tests erfolgreich;automatisch;blockierend
+QG-05;Migration/Restore;Vorab-Backup, Migration, Nachprüfung und Rückfall getestet;automatisch + Review;blockierend
+QG-06;UI Baseline;DPI, Tastatur, Fokus, AccessibleName und keine sichtbaren Layoutdefekte;manuell;blockierend für ersten Release
+QG-07;Performance Baseline;"Messwerte dokumentiert; keine Regression über vereinbartem Toleranzband";automatisch;warnend, später blockierend
+QG-08;Supply Chain;Lizenzinventar, feste Paketversionen, bekannte Schwachstellen geprüft;automatisch + Review;blockierend
+QG-09;Dokumentation;ADR, Traceability, Runbook und Änderungsprotokoll aktualisiert;Review;blockierend
+QG-10;Evidenzpaket;Manifest, Prüfsummen und Links auf Commit/Build vorhanden;automatisch;blockierend

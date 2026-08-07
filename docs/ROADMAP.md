@@ -2,6 +2,10 @@
 
 This roadmap is intentionally incremental. It must not be read as a promise that all later features are already implemented.
 
+## Detailed planning baseline
+
+The detailed planning document is versioned at [`planning/roadmap-v0.1/documents/SASD-PIMS-Entwicklungsroadmap-und-Dokumentationsplan-v0.1.md`](planning/roadmap-v0.1/documents/SASD-PIMS-Entwicklungsroadmap-und-Dokumentationsplan-v0.1.md). The implementation baseline and P1 specifications in `baseline/`, `database/`, `ui/`, `testing/` and `implementation/` govern the immediate coding start.
+
 ## 0.0.1-internal — Vertical architecture slice
 
 **Goal:** prove that the architecture can support one complete, testable workflow.

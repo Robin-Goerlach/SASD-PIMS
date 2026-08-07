@@ -2,6 +2,46 @@
 
 The following issues are intended as the first implementation backlog. Titles are ready for GitHub; acceptance criteria should be copied into each issue.
 
+
+## Preparation — Ready-to-Code baseline
+
+These are repository/documentation tasks, not product features. If this baseline package is committed as one reviewed changeset, they may be considered completed without creating separate GitHub issues.
+
+### P0-A. `docs(baseline): establish implementation baseline`
+
+Acceptance:
+
+- normative source hierarchy is recorded;
+- licence/platform contradictions are resolved;
+- known Pflichtenheft/Lastenheft reconciliation is explicit;
+- open non-blocking decisions have latest decision points.
+
+### P0-B. `docs(database): specify vertical-slice persistence model`
+
+Acceptance:
+
+- P1 Project schema/invariants are defined;
+- SQLite path/context/migration rules are defined;
+- backup/restore data flow is defined;
+- 0.1 expansion is described without pre-creating future domain tables.
+
+### P0-C. `docs(ui): specify vertical-slice workflows and states`
+
+Acceptance:
+
+- MainForm and ProjectEditor P1 behaviour are defined;
+- validation/error/DPI/keyboard rules exist;
+- concept screenshot is not treated as implemented UI.
+
+### P0-D. `docs(test): define vertical-slice verification plan`
+
+Acceptance:
+
+- domain/application/SQLite/recovery/architecture/UI/build tests are identified;
+- real SQLite is mandatory for integration tests;
+- Definition of Done and evidence requirements are explicit.
+
+
 ## Milestone `0.0.1-internal — Vertical Slice`
 
 ### 1. `chore(repo): scaffold .NET 10 solution and project structure`
@@ -164,13 +204,16 @@ Acceptance:
 - failed tests fail the workflow;
 - release packaging is not yet silently published.
 
-### 16. `build(release): produce first internal self-contained win-x64 artifact`
+### 16. `build(release): evaluate and package win-x64 vertical slice`
 
 **Labels:** `type:chore`, `area:build-release`, `priority:p1`
 
 Acceptance:
 
-- artifact can be produced reproducibly from a tag/commit;
+- framework-dependent and self-contained publish are compared where practical;
+- size and runtime prerequisite are recorded;
+- the default model for `0.1.0` is decided from evidence;
+- selected artifact can be produced reproducibly from a tag/commit;
 - version is visible;
 - SHA-256 checksum is generated;
 - no real user database or secret is packaged;

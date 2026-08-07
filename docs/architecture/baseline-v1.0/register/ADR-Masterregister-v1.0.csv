@@ -1,0 +1,93 @@
+﻿ADR-ID;Titel;Baseline-v1.0;Implementierungsstatus;Band;Quellstatus;Kurzbegruendung;Nachweisregel
+ADR-0001;Lokaler modularer Monolith;Accepted;Nicht nachgewiesen;Teil 1;Accepted;Ein Prozess und eine SQLite-Datenbank im MVP.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0002;Windows Forms als UI-Technologie;Accepted;Nicht nachgewiesen;Teil 1;Accepted;Lokale Windows-Desktopanwendung mit vorhandener SASD-Kompetenz.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0003;.NET 10 LTS;Accepted;Nicht nachgewiesen;Teil 1;Accepted;Neuentwicklung auf aktueller LTS-Basis.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0004;EF Core mit SQLite;Accepted;Nicht nachgewiesen;Teil 1;Accepted;Lokale Persistenz mit Migrationen und Transaktionen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0005;Vier Produktivprojekte;Accepted;Nicht nachgewiesen;Teil 1;Proposed;WinForms, Application, Domain und Infrastructure.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0006;Keine Pluginarchitektur im MVP;Accepted;Nicht nachgewiesen;Teil 1;Accepted;Erweiterungen zunächst intern oder über feste Adapter.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0007;Keine gemeinsame Datenbank mit anderen SASD-Produkten;Accepted;Nicht nachgewiesen;Teil 1;Accepted;Integration über Referenzen, Dateien oder spätere APIs.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0008;UI-Bindung über DTO-/View-Modelle statt EF-Entitäten;Accepted;Nicht nachgewiesen;Teil 1;Proposed;Kontrollierte Lebenszyklen und Testbarkeit.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0009;Loggingprovider;Open;Nicht anwendbar / spaeter;Teil 1;Proposed;Serilog gegen Microsoft-Standardansatz vergleichen.;Serilog gegen Microsoft-Standardansatz vergleichen.
+ADR-0010;Installations- und Updateverfahren;Open;Nicht anwendbar / spaeter;Teil 1;Proposed;Deployment-Spike erforderlich.;Deployment-Spike erforderlich.
+ADR-0011;Single-Instance-Verhalten;Accepted;Nicht nachgewiesen;Teil 1;Proposed;Datenbankkonkurrenz und UX prüfen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0012;Optimistische Nebenläufigkeitsprüfung;Accepted;Nicht nachgewiesen;Teil 1;Proposed;Schutz vor mehreren Fenstern und externen Änderungen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0013;Architekturtests ohne zusätzliche Bibliothek beginnen;Accepted;Nicht nachgewiesen;Teil 1;Proposed;Reflection/Roslyn vor weiterem Framework.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0014;Schlankes Presenter-/Controller-Muster;Accepted;Nicht nachgewiesen;Teil 2;Proposed;Kein vollständiges MVVM-Framework.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0015;Domänenobjekte frei von EF-Core-, WinForms- und Logging-Typen;Accepted;Nicht nachgewiesen;Teil 2;Accepted;Technikfreie Domäne.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0016;SQLite als alleinige produktive MVP-Persistenz;Accepted;Nicht nachgewiesen;Teil 2;Accepted;Keine Serverdatenbank im MVP.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0017;Migration nur nach Integritätsprüfung und Vorab-Sicherung;Accepted;Nicht nachgewiesen;Teil 2;Proposed;Kontrollierter Upgradepfad.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0018;Import als Vorschau-, Validierungs- und Transaktionsprozess;Accepted;Nicht nachgewiesen;Teil 2;Proposed;Keine stille Teilübernahme.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0019;Backup mit Datenbankkopie, Manifest und SHA-256;Accepted;Nicht nachgewiesen;Teil 2;Proposed;Prüfbare Sicherungen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0020;Strukturiertes lokales und datensparsames Logging;Accepted;Nicht nachgewiesen;Teil 2;Proposed;Diagnose ohne Inhaltsprotokollierung.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0021;CancellationToken für längere Vorgänge;Accepted;Nicht nachgewiesen;Teil 2;Proposed;UI-Thread nicht blockieren.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0022;Ein Composition Root in Program.Main;Accepted;Nicht nachgewiesen;Teil 3;Proposed;Zentrale Verdrahtung.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0023;Kurzlebiger DbContext pro Use Case;Accepted;Nicht nachgewiesen;Teil 3;Proposed;Begrenzte Unit-of-Work-Lebensdauer.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0024;Typisiertes Resultmodell für erwartete Fehler;Accepted;Nicht nachgewiesen;Teil 3;Proposed;Fehler nicht als Ausnahmefluss modellieren.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0025;Reale SQLite-Dateien für Migration- und Restoretests;Accepted;Nicht nachgewiesen;Teil 3;Proposed;Keine InMemory-Verfälschung.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0026;CI als Mindestanforderung, manuelle Releasefreigabe;Accepted;Nicht nachgewiesen;Teil 3;Proposed;Automatisierte Prüfung mit bewusster Freigabe.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0027;Leichtes Main-orientiertes Branchmodell;Accepted;Nicht nachgewiesen;Teil 3;Proposed;Kein komplexes Git-Flow.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0028;Installer und Auto-Update bleiben Entscheidungskandidaten;Open;Nicht anwendbar / spaeter;Teil 3;Proposed;PoC und Betriebsbewertung erforderlich.;PoC und Betriebsbewertung erforderlich.
+ADR-0029;Keine Telemetrie im MVP;Accepted;Nicht nachgewiesen;Teil 3;Proposed;Offline-first und Datenschutz.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0030;Trennung zentraler Fachkonzepte;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Projekt, Produkt, Anforderung, Aufgabe, Meilenstein und Release getrennt.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0031;Kleine Aggregate mit ID-Referenzen;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Konsistenzgrenzen begrenzen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0032;Technische GUID plus optionaler Fachcode;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Stabile Identität und Lesbarkeit.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0033;Typisierte Statusmodelle und Domänenmethoden;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Gültige Übergänge erzwingen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0034;Typisierte Beziehungen statt beliebiger Objektlinks;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Traceability semantisch kontrollieren.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0035;Pipeline und Portfolio als Read-Model-Projektionen;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Keine zweite Wahrheit.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0036;SQLite-basierte lokale Volltextsuche;Open;Nicht anwendbar / spaeter;Teil 4;Proposed;Keine externe Suchmaschine im MVP.;Keine externe Suchmaschine im MVP.
+ADR-0037;Reporting aus versionierten Snapshots;Open;Nicht anwendbar / spaeter;Teil 4;Proposed;Reproduzierbare Berichte.;Reproduzierbare Berichte.
+ADR-0038;Selektives Audit statt Event Sourcing;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Nachvollziehbarkeit ohne übermäßige Komplexität.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0039;Archivierung als Standard, harte Löschung als Ausnahme;Accepted;Nicht nachgewiesen;Teil 4;Proposed;Referenzintegrität schützen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0040;Explizites Betriebszustandsmodell;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Normal, eingeschränkt, Nur-Lesen, Recovery und Beenden.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0041;Ein schreibender Prozess pro Datenbestand;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Kein paralleler Schreibzugriff im MVP.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0042;Strukturierte lokale Rotationsprotokolle;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Begrenzte lokale Diagnose.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0043;Datensparsame Logs mit zentraler Redaktionsregel;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Keine Fachtexte oder Secrets in Logs.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0044;Supportpakete nur nach Vorschau und Freigabe;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Keine automatische Übertragung.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0045;Gestufte Gesundheits- und Integritätsprüfungen;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Start-, Diagnose- und Vollprüfung getrennt.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0046;Verifizierte Backup-Generationen mit Katalog;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Manifest, Prüfsummen und Status.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0047;Restore über Staging und atomaren Austausch;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Produktivbestand erst nach Prüfung ersetzen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0048;Nur-Lesen-Recovery statt automatischer Reparatur;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Unsichere Reparaturen vermeiden.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0049;Update-Preflight und explizite Rollback-Grenze;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Programm- und Datenrollback trennen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0050;Keine Hintergrundtelemetrie oder Betriebsdienst im MVP;Deferred;Nicht anwendbar / spaeter;Teil 5;Proposed;Lokale benutzergesteuerte Diagnose.;Lokale benutzergesteuerte Diagnose.
+ADR-0051;Releaseinventar, Prüfsummen und SBOM;Accepted;Nicht nachgewiesen;Teil 5;Proposed;Nachvollziehbare Auslieferungen.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0052;Native-first UI-Komponentenstrategie;Accepted;Nicht nachgewiesen;Teil 6;Proposed;"WinForms-Bordmittel bilden die Standardbasis; Fremdcontrols nur bei nachgewiesenem Defizit.";Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0053;Keine vollständige externe UI-Suite im MVP;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Theme- und Control-Suiten werden nicht zur horizontalen Plattformabhängigkeit.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0054;Komplexe externe UI-Funktionen hinter Adapter;Open;Nicht anwendbar / spaeter;Teil 6;Proposed;ScottPlot, Markdig/WebView2 oder spätere Spezialcontrols bleiben austauschbar.;ScottPlot, Markdig/WebView2 oder spätere Spezialcontrols bleiben austauschbar.
+ADR-0055;SASD-Komponenten erst nach wiederholtem realem Bedarf extrahieren;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Keine vorschnelle allgemeine UI-Bibliothek.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0056;Kein Fork ohne dauerhaften Wartungsfall;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Fork nur mit Lizenz-, Test-, Security-, Upstream- und Exit-Plan.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0057;Querschnittliche Architekturänderungen erfordern ADR und Auswirkungsanalyse;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Schwer reversible Entscheidungen bleiben nachvollziehbar.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0058;Architekturregeln werden als Fitness-Gates geprüft;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Automatisierte und manuelle Nachweise verhindern Architekturdrift.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0059;Abhängigkeitsbudget und Drittanbieterinventar;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Neue Pakete benötigen Nutzen-, Lizenz-, Aktivitäts- und Exit-Bewertung.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0060;Technische Schuld wird mit Typ, Trigger und Frist geführt;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Schuld ist sichtbar und keine namenlose Resteliste.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0061;Erweiterungspunkte intern und explizit vor Pluginmodell;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Ports und feste Adapter vor dynamischer Erweiterbarkeit.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0062;Getrennte Versionen für Produkt, Schema, Export und Dokumente;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Kompatibilität wird nicht aus einer einzigen Versionsnummer abgeleitet.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0063;Abkündigungen benötigen Ersatz, Übergangsregel und Termin;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Keine stillen Vertragsbrüche.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0064;PoC-Pflicht für risikoreiche oder schwer austauschbare Entscheidungen;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Messbare Evidenz vor dauerhafter Bindung.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0065;DPI und Accessibility als Release-Gate für UI-Änderungen;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Bedienbarkeit wird nicht nachträglich behandelt.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0066;Architekturausnahmen sind begründet, befristet und nachverfolgt;Accepted;Nicht nachgewiesen;Teil 6;Proposed;Ausnahmen dürfen keine dauerhafte Schattenarchitektur bilden.;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0067;Vor breiter MVP-Entwicklung wird ein vertikaler Referenzschnitt umgesetzt.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;VS-01 bis VS-12 und Phase-G-Review;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0068;Architekturstatuswechsel benötigen referenzierbare Evidenz-IDs.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;Evidenzmanifest in CI und ADR-Vorlage verwendet;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0069;Projekt- und Schichtabhängigkeiten werden automatisiert geprüft.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;Architekturtests laufen blockierend im Build;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0070;Systemnahe Tests verwenden ausschließlich isolierte temporäre Datenpfade mit Pfadwächter.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;negativer Wächtertest und CI-Ausführung;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0071;Migration, Backup und Restore bilden ein gemeinsames Release-Gate.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;positiver und negativer End-to-End-Test;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0072;Die erste UI-Baseline verwendet Standard-WinForms ohne externe visuelle Suite.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;DPI-/Tastatur-/A11y-Protokoll bestanden;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0073;Performancewerte starten als dokumentierte Planungsbaseline und werden erst nach Stabilisierung blockierend.;Open;Nicht anwendbar / spaeter;Teil 7;Proposed;reproduzierbare Messberichte aus mehreren Läufen;reproduzierbare Messberichte aus mehreren Läufen
+ADR-0074;Jeder Releasekandidat erzeugt ein prüfsummengesichertes Evidenzpaket.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;Manifest verbindet Commit, Tests, SBOM und Reports;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0075;Kritische Recoverypfade werden durch Fault Injection geprüft.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;definierter Katalog und bestandene Negativtests;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0076;PoC-Code wird nicht ohne eigene Übernahmeentscheidung produktiv.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;Review- und Refactoringnachweis;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0077;"Testdaten sind synthetisch und deterministisch; reale Nutzerdaten sind in Architekturtests verboten.";Accepted;Nicht nachgewiesen;Teil 7;Proposed;Fixture- und Pfadprüfungen im Build;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0078;Die breitere MVP-Featureentwicklung benötigt eine dokumentierte Phase-G-Freigabe.;Accepted;Nicht nachgewiesen;Teil 7;Proposed;Implementierungsfreigabe-Checkliste abgeschlossen;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0079;Externe Ressourcen werden im MVP als typisierte Referenzen und nicht als synchronisierte Fremdobjekte modelliert.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;Domänenmodell, Persistenz und Round-trip-Test implementiert;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0080;GitHub-Repositories, ChatGPT-Chats und Dokumente werden im MVP über manuell gepflegte Links verwaltet.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;UI- und Persistenznachweis für alle drei Referenztypen;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0081;Aktive Fremdsystemintegration erfolgt ausschließlich hinter providerneutralen Application-Ports.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;Architekturtest verhindert Provider-Typen außerhalb Adapterprojekt;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0082;"PIMS bleibt offline vollständig nutzbar; externe Metadaten sind optionaler Cache.";Accepted;Nicht nachgewiesen;Teil 8;Proposed;Offline-Systemtest und degradierter UI-Zustand;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0083;Externe Ziele werden nur über einen zentralen validierenden Opener gestartet.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;URI-Allowlist und Negativtests bestanden;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0084;Importe verwenden Snapshot, Parser nach Formatversion, Vorschau und transaktionale Übernahme.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;positiver und negativer End-to-End-Importtest;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0085;Exporte werden über versionierte Hüllen, temporäre Dateien und atomaren Austausch erzeugt.;Open;Nicht anwendbar / spaeter;Teil 8;Proposed;Manipulations- und Schreibfehlertest bestanden;Manipulations- und Schreibfehlertest bestanden
+ADR-0086;Backupformat und Austauschformat bleiben getrennte Verträge.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;separate Format-IDs und Kompatibilitätstests;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0087;Secrets für spätere API-Adapter werden ausschließlich über ISecretStore bezogen.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;Secret-Store-Adapter und Log-Redaction-Test;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0088;"Link- und Metadatenprüfungen erfolgen benutzerinitiiert; kein Hintergrundmonitor im MVP.";Deferred;Nicht anwendbar / spaeter;Teil 8;Proposed;"keine geplanten Timer/Services; UI-Abbruchtest";"keine geplanten Timer/Services; UI-Abbruchtest"
+ADR-0089;Provider-Metadaten werden als neutrale versionierte Snapshots gespeichert.;Accepted;Nicht nachgewiesen;Teil 8;Proposed;Adapter-Contract-Test und Schemaevidenz;Vertikaler Referenzschnitt und Qualitaetsgates
+ADR-0090;CSV-Import/-Export erhält eigene Sicherheits- und Mappingregeln.;Open;Nicht anwendbar / spaeter;Teil 8;Proposed;Formula-Injection-, Encoding- und Mappingtests;Formula-Injection-, Encoding- und Mappingtests
+ADR-0091;Cloud-Synchronisation und Mehrbenutzer-Konfliktauflösung sind keine Erweiterung des Referenzmodells, sondern eine spätere eigenständige Architekturentscheidung.;Deferred;Nicht anwendbar / spaeter;Teil 8;Proposed;Scope- und Roadmapentscheidung bestätigt;Scope- und Roadmapentscheidung bestätigt
+ADR-0092;Ein produktiver Provideradapter benötigt einen PoC mit Nutzen-, Lizenz-, Security-, Rate-Limit- und Austauschbewertung.;Open;Nicht anwendbar / spaeter;Teil 8;Proposed;abgenommener PoC-Bericht und separates ADR;abgenommener PoC-Bericht und separates ADR

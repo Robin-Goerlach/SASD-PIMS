@@ -1,0 +1,15 @@
+flowchart TB
+  LH[Lastenheft] --> BL[Anforderungsbaseline]
+  PH[Pflichtenheft] --> DB[Datenbankspezifikation]
+  PH --> UI[UI/UX-Spezifikation]
+  PH --> TEST[Testkonzept & Testspezifikation]
+  ARCH[Architektur v1.0] --> DB
+  ARCH --> UI
+  ARCH --> TEST
+  DB --> POC[Vertikalschnitt]
+  UI --> POC
+  TEST --> POC
+  POC --> EVID[PoC-/Evidenzbericht]
+  EVID --> BACKLOG[Implementierungsbacklog]
+  BACKLOG --> RELEASES[0.1 bis 1.0]
+  RELEASES --> OPS[Betriebs-, Benutzer-, Migrations- & Releasedokumente]

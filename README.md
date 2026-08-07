@@ -1,7 +1,7 @@
 # SASD PIMS
 
-> **Status:** Repository preparation / pre-implementation.  
-> Requirements, technical specification, architecture baseline and development roadmap exist.  
+> **Status:** Ready-to-code baseline / pre-implementation.  
+> Requirements, technical specification, architecture baseline, implementation specifications and roadmap are versioned in this repository.  
 > **No production-ready application or installable release is available yet.**
 
 **SASD PIMS (Project Information Management System)** is a planned local-first Windows desktop application for maintaining the information that describes and governs SASD software projects. It is intentionally not a general task-management platform or Jira replacement.
@@ -122,7 +122,23 @@ flowchart LR
 
 Key dependency rule: the domain must not depend on Windows Forms, Entity Framework Core, SQLite, filesystem APIs or external providers.
 
-Detailed architecture documentation is maintained separately under `docs/architecture/` and should be versioned with the repository when implementation begins.
+The approved architecture baseline is versioned under `docs/architecture/baseline-v1.0/`. Implementation evidence remains separate from architectural acceptance.
+
+
+## Documentation baseline
+
+The repository contains the implementation baseline used for the first vertical slice:
+
+- [`docs/baseline/BASELINE.md`](docs/baseline/BASELINE.md) — approval record, source hierarchy and reconciliations;
+- [`docs/requirements/lastenheft-v0.1/documents/SASD-PIMS-Lastenheft-v0.1.md`](docs/requirements/lastenheft-v0.1/documents/SASD-PIMS-Lastenheft-v0.1.md) — functional requirements;
+- [`docs/specification/pflichtenheft-v0.1/documents/SASD-PIMS-Pflichtenheft-v0.1.md`](docs/specification/pflichtenheft-v0.1/documents/SASD-PIMS-Pflichtenheft-v0.1.md) — technical specification;
+- [`docs/architecture/baseline-v1.0/documents/SASD-PIMS-Software-Architecture-Document-v1.0.md`](docs/architecture/baseline-v1.0/documents/SASD-PIMS-Software-Architecture-Document-v1.0.md) — approved architecture baseline;
+- [`docs/database/SASD-PIMS-Datenbankspezifikation-v0.1.md`](docs/database/SASD-PIMS-Datenbankspezifikation-v0.1.md) — persistence design for `0.0.1-internal` and `0.1.0`;
+- [`docs/ui/SASD-PIMS-UI-UX-Spezifikation-v0.1.md`](docs/ui/SASD-PIMS-UI-UX-Spezifikation-v0.1.md) — minimal UI behaviour for the first two stages;
+- [`docs/testing/SASD-PIMS-Test-und-Abnahmespezifikation-v0.1.md`](docs/testing/SASD-PIMS-Test-und-Abnahmespezifikation-v0.1.md) — vertical-slice verification plan;
+- [`docs/implementation/VERTICAL-SLICE-0.0.1.md`](docs/implementation/VERTICAL-SLICE-0.0.1.md) — executable scope and Definition of Done.
+
+The existence of a specification does not mean the corresponding functionality has been implemented.
 
 ## Repository structure
 
@@ -170,7 +186,7 @@ Until the first vertical slice and release artifact exist, any installation inst
 
 Once the solution is scaffolded, the expected development prerequisites are:
 
-- Windows 10/11 supported by the selected .NET 10 runtime;
+- Windows 11 x64;
 - .NET 10 SDK;
 - Git;
 - an IDE/editor with C# and Windows Forms support.
@@ -253,13 +269,9 @@ The project uses short-lived branches, a release-ready `main` branch, convention
 
 ## License
 
-**No source-code license should be inferred merely from the presence of this repository starter package.**
+SASD PIMS is licensed under the **Apache License 2.0**.
 
-For a deliberately public open-source repository, **Apache License 2.0** is the recommended default because it permits commercial use and redistribution while providing an explicit patent grant and clear contribution terms.
-
-If SASD intends to keep the implementation proprietary, the repository should remain private and **must not** publish the source under Apache-2.0.
-
-The decision must be made explicitly before the first public source-code release. See [`LICENSE-DECISION.md`](LICENSE-DECISION.md).
+See [`LICENSE`](LICENSE) for the full licence text. Third-party dependencies remain subject to their respective licences and must be recorded before release.
 
 ## Project status
 

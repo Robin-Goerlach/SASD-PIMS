@@ -1,0 +1,15 @@
+﻿ID;Typ;Sachverhalt;Risiko;Trigger/Frist;Abbaukriterium;Status
+TD-001;Decision Debt;Projektstruktur ADR-0005 noch nicht durch Vertikalschnitt bestätigt;Mittel;Vor erstem produktiven Feature;Vertikalschnitt mit WinForms/Application/Domain/Infrastructure bauen und Referenzregeln prüfen;Open
+TD-002;Decision Debt;UI-Bindungs- und Presentermodell ADR-0008/0014 nicht praktisch validiert;Mittel;Vor Ausbau mehrerer Formulare;Projekt-Editieren-Use-Case implementieren und UI-Testbarkeit bewerten;Open
+TD-003;Decision Debt;Loggingprovider ADR-0009 offen;Niedrig;Vor erster Diagnosefunktion;Vergleich Microsoft.Logging plus einfacher Datei-Provider gegen Serilog;Open
+TD-004;Decision Debt;Installer und Updateweg ADR-0010/0028 offen;Hoch;Vor erstem extern installierbaren Release;Deployment-PoC mit Installation, Update, Rollback und Runtimeprüfung;Open
+TD-005;Implementation Debt;Architektur-Fitness-Gates noch nicht implementiert;Mittel;Mit Aufbau der CI;Referenz-, Paket-, ADR- und Migrationsprüfungen automatisieren;Open
+TD-006;Evidence Debt;Reale Datenmengen und UI-Performanceannahmen nicht vermessen;Mittel;Vor Optimierungen oder Fremdgrid;Referenzdatensatz und Messprotokoll erstellen;Open
+TD-007;Decision Debt;Markdownvorschau noch nicht MVP-verbindlich;Niedrig;Wenn formatierte Vorschau priorisiert wird;Markdig/WebView2-PoC mit Security, DPI und Deployment;Open
+TD-008;Decision Debt;Diagrammfunktion noch nicht MVP-verbindlich;Niedrig;Wenn Berichtsgrafiken priorisiert werden;ScottPlot-PoC hinter neutralem Chartmodell;Open
+TD-009;Evidence Debt;Accessibility- und DPI-Baseline fehlt;Hoch;Vor UI-Freeze;Testmatrix 100-200 Prozent, Tastatur und UI Automation durchführen;Open
+TD-010;Evidence Debt;Migrations- und Restore-Rückfallgrenze nicht prototypisch belegt;Hoch;Vor erster produktiver Schemamigration;Upgrade-/Fehler-/Restore-Test mit realer SQLite-Datei;Open
+TD-011;Specification Debt;Import- und Exportformate noch nicht vollständig versioniert;Mittel;Vor öffentlichem Exportformat;Schemas, Versionierung und Kompatibilitätsregeln festlegen;Open
+TD-012;Specification Debt;Aufbewahrungs- und Löschfristen noch nicht fachlich entschieden;Mittel;Vor produktivem Archivierungsfeature;Fachliche Regeln und Datenschutzfolgen entscheiden;Open
+TD-013;Evidence Debt;Architekturbaseline 1.0 ist dokumentiert, aber noch nicht durch den vertikalen Referenzschnitt nachgewiesen.;Hoch;Vor breiter MVP-Featureentwicklung;Phase-G-Freigabe aus Band 7 mit Evidenzpaket.;Open
+TD-014;Documentation Debt;Lastenheft-, Pflichtenheft- und Architekturkennungen sind noch nicht in einer maschinenlesbaren Gesamttraceability zusammengefuehrt.;Mittel;Vor Release Candidate;Traceability-Master gegen final versionierte Anforderungsdokumente pruefen.;Open
