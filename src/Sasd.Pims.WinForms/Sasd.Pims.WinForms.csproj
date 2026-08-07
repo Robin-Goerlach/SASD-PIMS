@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sasd.Pims.Application\Sasd.Pims.Application.csproj" />
+    <ProjectReference Include="..\Sasd.Pims.Infrastructure\Sasd.Pims.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

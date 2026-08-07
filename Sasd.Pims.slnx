@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Sasd.Pims.Application/Sasd.Pims.Application.csproj" />
+    <Project Path="src/Sasd.Pims.Domain/Sasd.Pims.Domain.csproj" />
+    <Project Path="src/Sasd.Pims.Infrastructure/Sasd.Pims.Infrastructure.csproj" />
+    <Project Path="src/Sasd.Pims.WinForms/Sasd.Pims.WinForms.csproj" />
+  </Folder>
+</Solution>
