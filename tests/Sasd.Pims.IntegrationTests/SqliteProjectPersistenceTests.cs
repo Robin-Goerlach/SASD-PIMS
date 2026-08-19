@@ -72,7 +72,7 @@ public sealed class SqliteProjectPersistenceTests
             ProjectWriteResult.Saved,
             await repository.AddAsync(project, TestContext.Current.CancellationToken));
 
-        await new DatabaseMigrator(database.Factory).MigrateAsync(TestContext.Current.CancellationToken);
+        await new DatabaseMigrator(database.Factory).MigrateAsync(cancellationToken: TestContext.Current.CancellationToken);
         var loaded = await repository.GetByIdAsync(project.Id, TestContext.Current.CancellationToken);
 
         Assert.NotNull(loaded);
@@ -98,7 +98,7 @@ public sealed class SqliteProjectPersistenceTests
         {
             var root = Path.Combine(Path.GetTempPath(), "SASD-PIMS", "tests", Guid.NewGuid().ToString("N"));
             var database = new SqliteTestDatabase(root);
-            await new DatabaseMigrator(database.Factory).MigrateAsync(cancellationToken);
+            await new DatabaseMigrator(database.Factory).MigrateAsync(cancellationToken: cancellationToken);
             return database;
         }
 

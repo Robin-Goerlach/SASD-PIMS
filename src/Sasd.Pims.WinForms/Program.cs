@@ -6,6 +6,8 @@ using Sasd.Pims.Application.Diagnostics;
 using Sasd.Pims.Infrastructure.Diagnostics;
 using Sasd.Pims.Infrastructure.Export;
 using Sasd.Pims.Infrastructure.Persistence;
+using Sasd.Pims.Application.Recovery;
+using Sasd.Pims.Infrastructure.Recovery;
 
 internal static class Program
 {
@@ -45,7 +47,12 @@ internal static class Program
         try
         {
             var contextFactory = new PimsDbContextFactory(databasePath);
-            new DatabaseMigrator(contextFactory).MigrateAsync().GetAwaiter().GetResult();
+            var version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown";
+            var recoveryService = new SqliteRecoveryService();
+            new DatabaseMigrator(contextFactory)
+                .MigrateAsync(Path.Combine(applicationRoot, "backups"), version)
+                .GetAwaiter()
+                .GetResult();
             var repository = new SqliteProjectRepository(contextFactory);
             var failureHandler = new OperationFailureHandler(
                 loggerFactory.CreateLogger<OperationFailureHandler>());
@@ -57,7 +64,12 @@ internal static class Program
                     repository,
                     new JsonProjectExportWriter(),
                     TimeProvider.System,
-                    failureHandler));
+                    failureHandler),
+                new CreateDatabaseBackup(recoveryService, failureHandler),
+                new RestoreDatabaseBackup(recoveryService, failureHandler),
+                databasePath,
+                Path.Combine(applicationRoot, "backups"),
+                version);
 
             System.Windows.Forms.Application.ThreadException += (_, eventArgs) =>
                 ReportUnhandled(logger, eventArgs.Exception);

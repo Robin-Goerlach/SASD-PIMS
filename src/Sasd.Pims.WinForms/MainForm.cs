@@ -1,4 +1,5 @@
 using Sasd.Pims.Application.Projects;
+using Sasd.Pims.Application.Recovery;
 
 namespace Sasd.Pims.WinForms;
 
@@ -8,6 +9,11 @@ public sealed class MainForm : Form
     private readonly LoadProject _loadProject;
     private readonly ListProjects _listProjects;
     private readonly ExportProject _exportProject;
+    private readonly CreateDatabaseBackup _createBackup;
+    private readonly RestoreDatabaseBackup _restoreBackup;
+    private readonly string _databasePath;
+    private readonly string _rollbackDirectory;
+    private readonly string _applicationVersion;
     private readonly ListBox _projectList = new();
     private readonly Button _openButton = new();
     private readonly ToolStripStatusLabel _statusLabel = new("Ready");
@@ -16,12 +22,22 @@ public sealed class MainForm : Form
         CreateProject createProject,
         LoadProject loadProject,
         ListProjects listProjects,
-        ExportProject exportProject)
+        ExportProject exportProject,
+        CreateDatabaseBackup createBackup,
+        RestoreDatabaseBackup restoreBackup,
+        string databasePath,
+        string rollbackDirectory,
+        string applicationVersion)
     {
         _createProject = createProject;
         _loadProject = loadProject;
         _listProjects = listProjects;
         _exportProject = exportProject;
+        _createBackup = createBackup;
+        _restoreBackup = restoreBackup;
+        _databasePath = databasePath;
+        _rollbackDirectory = rollbackDirectory;
+        _applicationVersion = applicationVersion;
         InitializeControls();
     }
 
@@ -71,6 +87,24 @@ public sealed class MainForm : Form
         };
         exportButton.Click += ExportProjectClicked;
 
+        var backupButton = new Button
+        {
+            Text = "&Backup",
+            AutoSize = true,
+            TabIndex = 4,
+            AccessibleName = "Create database backup",
+        };
+        backupButton.Click += BackupClicked;
+
+        var restoreButton = new Button
+        {
+            Text = "&Restore",
+            AutoSize = true,
+            TabIndex = 5,
+            AccessibleName = "Restore database backup",
+        };
+        restoreButton.Click += RestoreClicked;
+
         var projectLabel = new Label
         {
             Text = "&Projects",
@@ -89,6 +123,8 @@ public sealed class MainForm : Form
         commands.Controls.Add(newButton);
         commands.Controls.Add(_openButton);
         commands.Controls.Add(exportButton);
+        commands.Controls.Add(backupButton);
+        commands.Controls.Add(restoreButton);
 
         var content = new TableLayoutPanel
         {
@@ -181,5 +217,70 @@ public sealed class MainForm : Form
         _statusLabel.Text = result.Status == ProjectOperationStatus.Success
             ? "Project exported."
             : $"Project export failed. Error ID: {result.ErrorId}";
+    }
+
+    private async void BackupClicked(object? sender, EventArgs e)
+    {
+        using var dialog = new SaveFileDialog
+        {
+            AddExtension = true,
+            DefaultExt = "zip",
+            Filter = "SASD PIMS backups (*.zip)|*.zip|All files (*.*)|*.*",
+            FileName = $"backup-{DateTimeOffset.Now:yyyyMMdd-HHmmss}.zip",
+            OverwritePrompt = true,
+            Title = "Create backup",
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        var result = await _createBackup.ExecuteAsync(
+            _databasePath,
+            dialog.FileName,
+            _applicationVersion);
+        _statusLabel.Text = result.Status == ProjectOperationStatus.Success
+            ? "Backup created and verified."
+            : $"Backup failed. Error ID: {result.ErrorId}";
+    }
+
+    private async void RestoreClicked(object? sender, EventArgs e)
+    {
+        using var dialog = new OpenFileDialog
+        {
+            CheckFileExists = true,
+            Filter = "SASD PIMS backups (*.zip)|*.zip|All files (*.*)|*.*",
+            Title = "Restore backup",
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        if (MessageBox.Show(
+                this,
+                "Restore the selected backup? The current database will first be saved as a rollback backup.",
+                "Restore backup",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2) != DialogResult.OK)
+        {
+            return;
+        }
+
+        var result = await _restoreBackup.ExecuteAsync(
+            _databasePath,
+            dialog.FileName,
+            _rollbackDirectory,
+            _applicationVersion);
+        if (result.Status == ProjectOperationStatus.Success)
+        {
+            await RefreshProjectsAsync();
+            _statusLabel.Text = "Backup restored and verified.";
+        }
+        else
+        {
+            _statusLabel.Text = $"Restore failed; active data was preserved. Error ID: {result.ErrorId}";
+        }
     }
 }
