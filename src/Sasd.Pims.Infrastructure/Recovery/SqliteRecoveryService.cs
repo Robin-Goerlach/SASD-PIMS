@@ -14,6 +14,17 @@ public sealed class SqliteRecoveryService : IDatabaseBackupService, IDatabaseRes
     private const string DatabaseEntryName = "pims.db";
     private const string ManifestEntryName = "manifest.json";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
+    private readonly IRecoveryFileOperations _fileOperations;
+
+    public SqliteRecoveryService()
+        : this(new RecoveryFileOperations())
+    {
+    }
+
+    internal SqliteRecoveryService(IRecoveryFileOperations fileOperations)
+    {
+        _fileOperations = fileOperations;
+    }
 
     public static async Task ValidateCurrentDatabaseAsync(
         string databasePath,
@@ -139,12 +150,12 @@ public sealed class SqliteRecoveryService : IDatabaseBackupService, IDatabaseRes
             Directory.CreateDirectory(Path.GetDirectoryName(activeDatabase)!);
             if (File.Exists(activeDatabase))
             {
-                File.Move(activeDatabase, displacedDatabase);
+                _fileOperations.Move(activeDatabase, displacedDatabase);
             }
 
             try
             {
-                File.Copy(stagedDatabase, activeDatabase, false);
+                _fileOperations.Copy(stagedDatabase, activeDatabase);
                 await EnsureIntegrityAsync(activeDatabase, cancellationToken).ConfigureAwait(false);
                 await SmokeReadAsync(activeDatabase, cancellationToken).ConfigureAwait(false);
                 TryDeleteFile(displacedDatabase);
@@ -155,7 +166,7 @@ public sealed class SqliteRecoveryService : IDatabaseBackupService, IDatabaseRes
                 TryDeleteFile(activeDatabase);
                 if (File.Exists(displacedDatabase))
                 {
-                    File.Move(displacedDatabase, activeDatabase);
+                    _fileOperations.Move(displacedDatabase, activeDatabase);
                 }
 
                 throw;
