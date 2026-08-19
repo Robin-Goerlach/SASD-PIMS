@@ -1,8 +1,12 @@
 using Sasd.Pims.Domain.Projects;
+using Sasd.Pims.Application.Diagnostics;
 
 namespace Sasd.Pims.Application.Projects;
 
-public sealed class CreateProject(IProjectRepository repository, TimeProvider timeProvider)
+public sealed class CreateProject(
+    IProjectRepository repository,
+    TimeProvider timeProvider,
+    OperationFailureHandler failureHandler)
 {
     public async Task<ProjectOperationResult<ProjectDto>> ExecuteAsync(
         CreateProjectCommand command,
@@ -26,7 +30,15 @@ public sealed class CreateProject(IProjectRepository repository, TimeProvider ti
                     .ToArray());
         }
 
-        var writeResult = await repository.AddAsync(project, cancellationToken).ConfigureAwait(false);
+        ProjectWriteResult writeResult;
+        try
+        {
+            writeResult = await repository.AddAsync(project, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            return failureHandler.Report<ProjectDto>("CreateProject", exception);
+        }
         return writeResult switch
         {
             ProjectWriteResult.Saved => ProjectOperationResult.Success(ProjectDto.FromDomain(project)),

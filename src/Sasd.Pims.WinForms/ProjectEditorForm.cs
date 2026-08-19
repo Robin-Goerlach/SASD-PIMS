@@ -134,7 +134,9 @@ public sealed class ProjectEditorForm : Form
                 return;
             }
 
-            _validationSummary.Text = string.Join(Environment.NewLine, result.Errors.Select(error => $"• {error.Message}"));
+            _validationSummary.Text = result.Status == ProjectOperationStatus.InfrastructureFailure
+                ? $"The project could not be saved. Error ID: {result.ErrorId}"
+                : string.Join(Environment.NewLine, result.Errors.Select(error => $"• {error.Message}"));
             _validationSummary.Focus();
         }
         finally

@@ -1,12 +1,22 @@
 namespace Sasd.Pims.Application.Projects;
 
-public sealed class LoadProject(IProjectRepository repository)
+using Sasd.Pims.Application.Diagnostics;
+
+public sealed class LoadProject(IProjectRepository repository, OperationFailureHandler failureHandler)
 {
     public async Task<ProjectOperationResult<ProjectDto>> ExecuteAsync(
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        var project = await repository.GetByIdAsync(id, cancellationToken).ConfigureAwait(false);
+        Sasd.Pims.Domain.Projects.Project? project;
+        try
+        {
+            project = await repository.GetByIdAsync(id, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            return failureHandler.Report<ProjectDto>("LoadProject", exception);
+        }
         return project is null
             ? ProjectOperationResult.NotFound<ProjectDto>()
             : ProjectOperationResult.Success(ProjectDto.FromDomain(project));

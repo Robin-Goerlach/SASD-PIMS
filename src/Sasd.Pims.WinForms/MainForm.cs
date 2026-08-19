@@ -123,7 +123,14 @@ public sealed class MainForm : Form
     private async Task RefreshProjectsAsync()
     {
         var selectedId = (_projectList.SelectedItem as ProjectSummaryDto)?.Id;
-        var projects = await _listProjects.ExecuteAsync();
+        var result = await _listProjects.ExecuteAsync();
+        if (result.Status != ProjectOperationStatus.Success || result.Value is null)
+        {
+            _statusLabel.Text = $"Could not load projects. Error ID: {result.ErrorId}";
+            return;
+        }
+
+        var projects = result.Value;
         _projectList.DataSource = projects.ToList();
         if (selectedId is not null)
         {

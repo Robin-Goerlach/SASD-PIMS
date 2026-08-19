@@ -6,4 +6,5 @@ public enum ProjectOperationStatus
     ValidationFailed,
     Conflict,
     NotFound,
+    InfrastructureFailure,
 }

@@ -71,7 +71,6 @@ The application-level contract should use `Microsoft.Extensions.Logging`.
 
 | ID | Decision | Latest decision point |
 | --- | --- | --- |
-| OD-P1-002 | Concrete file logging provider | Before structured file logging implementation |
 | OD-P1-003 | Framework-dependent vs self-contained default package | End of `0.0.1-internal` |
 | OD-01-001 | Final project lifecycle/archive/deletion semantics | Before `0.1.0` lifecycle feature |
 | OD-01-002 | Exact controlled vocabularies for project type/area | Before `0.1.0` reference data seed |
@@ -84,6 +83,11 @@ These decisions must not be guessed inside UI event handlers or persistence mapp
 invariant upper case, limited to 1-64 characters from `A-Z`, `0-9` and `-`, start and end with an alphanumeric
 character, and do not contain repeated hyphens. The normalised value is stored and compared for uniqueness. The
 database specification contains the persistence-level rule.
+
+`OD-P1-002` is resolved for P1 with a small local JSON Lines provider implemented behind
+`Microsoft.Extensions.Logging.ILoggerProvider`. It writes daily files with a 14-day retention window and deliberately
+records no project payload or full local paths. Serilog is not introduced because the P1 logging needs do not justify
+the additional dependency; the application contract remains provider-neutral.
 
 ## 6. Approved first implementation scope
 
