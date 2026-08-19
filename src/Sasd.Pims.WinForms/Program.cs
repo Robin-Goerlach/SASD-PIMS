@@ -4,6 +4,7 @@ using Sasd.Pims.Application.Projects;
 using Microsoft.Extensions.Logging;
 using Sasd.Pims.Application.Diagnostics;
 using Sasd.Pims.Infrastructure.Diagnostics;
+using Sasd.Pims.Infrastructure.Export;
 using Sasd.Pims.Infrastructure.Persistence;
 
 internal static class Program
@@ -51,7 +52,12 @@ internal static class Program
             var mainForm = new MainForm(
                 new CreateProject(repository, TimeProvider.System, failureHandler),
                 new LoadProject(repository, failureHandler),
-                new ListProjects(repository, failureHandler));
+                new ListProjects(repository, failureHandler),
+                new ExportProject(
+                    repository,
+                    new JsonProjectExportWriter(),
+                    TimeProvider.System,
+                    failureHandler));
 
             System.Windows.Forms.Application.ThreadException += (_, eventArgs) =>
                 ReportUnhandled(logger, eventArgs.Exception);

@@ -7,15 +7,21 @@ public sealed class MainForm : Form
     private readonly CreateProject _createProject;
     private readonly LoadProject _loadProject;
     private readonly ListProjects _listProjects;
+    private readonly ExportProject _exportProject;
     private readonly ListBox _projectList = new();
     private readonly Button _openButton = new();
     private readonly ToolStripStatusLabel _statusLabel = new("Ready");
 
-    public MainForm(CreateProject createProject, LoadProject loadProject, ListProjects listProjects)
+    public MainForm(
+        CreateProject createProject,
+        LoadProject loadProject,
+        ListProjects listProjects,
+        ExportProject exportProject)
     {
         _createProject = createProject;
         _loadProject = loadProject;
         _listProjects = listProjects;
+        _exportProject = exportProject;
         InitializeControls();
     }
 
@@ -56,6 +62,15 @@ public sealed class MainForm : Form
         _openButton.AccessibleName = "Open selected project";
         _openButton.Click += OpenProjectClicked;
 
+        var exportButton = new Button
+        {
+            Text = "&Export JSON",
+            AutoSize = true,
+            TabIndex = 3,
+            AccessibleName = "Export selected project as JSON",
+        };
+        exportButton.Click += ExportProjectClicked;
+
         var projectLabel = new Label
         {
             Text = "&Projects",
@@ -73,6 +88,7 @@ public sealed class MainForm : Form
         };
         commands.Controls.Add(newButton);
         commands.Controls.Add(_openButton);
+        commands.Controls.Add(exportButton);
 
         var content = new TableLayoutPanel
         {
@@ -136,5 +152,34 @@ public sealed class MainForm : Form
         {
             _projectList.SelectedItem = projects.FirstOrDefault(project => project.Id == selectedId);
         }
+    }
+
+    private async void ExportProjectClicked(object? sender, EventArgs e)
+    {
+        if (_projectList.SelectedItem is not ProjectSummaryDto selected)
+        {
+            _statusLabel.Text = "Select a project to export.";
+            return;
+        }
+
+        using var dialog = new SaveFileDialog
+        {
+            AddExtension = true,
+            DefaultExt = "json",
+            Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+            FileName = $"{selected.Key}.json",
+            OverwritePrompt = true,
+            Title = "Export project",
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        var version = typeof(MainForm).Assembly.GetName().Version?.ToString() ?? "unknown";
+        var result = await _exportProject.ExecuteAsync(selected.Id, dialog.FileName, version);
+        _statusLabel.Text = result.Status == ProjectOperationStatus.Success
+            ? "Project exported."
+            : $"Project export failed. Error ID: {result.ErrorId}";
     }
 }
