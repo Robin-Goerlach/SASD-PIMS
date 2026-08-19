@@ -89,6 +89,12 @@ database specification contains the persistence-level rule.
 records no project payload or full local paths. Serilog is not introduced because the P1 logging needs do not justify
 the additional dependency; the application contract remains provider-neutral.
 
+`OD-P1-003` is resolved at the end of P1 in favour of a self-contained `win-x64` ZIP as the
+default package for `0.1.0`. The measured P1 publish was 125.10 MiB self-contained versus
+8.20 MiB framework-dependent. The larger package is accepted for the internal/local-first
+distribution because it removes the separate .NET Desktop Runtime prerequisite. The
+framework-dependent publish remains a supported evaluation output, not the default artifact.
+
 ## 6. Approved first implementation scope
 
 `0.0.1-internal` must prove:
