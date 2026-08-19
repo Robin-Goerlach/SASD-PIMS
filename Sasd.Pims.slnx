@@ -5,4 +5,7 @@
     <Project Path="src/Sasd.Pims.Infrastructure/Sasd.Pims.Infrastructure.csproj" />
     <Project Path="src/Sasd.Pims.WinForms/Sasd.Pims.WinForms.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Sasd.Pims.Architecture.Tests/Sasd.Pims.Architecture.Tests.csproj" />
+  </Folder>
 </Solution>
