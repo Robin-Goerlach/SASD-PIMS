@@ -53,6 +53,16 @@ public sealed class ProjectTests
     }
 
     [Fact]
+    public void InvalidCreationAggregatesIndependentInputErrors()
+    {
+        var exception = Assert.Throws<DomainValidationException>(
+            () => Project.Create(Guid.NewGuid(), " ", " ", null, CreatedAt));
+
+        Assert.Contains(exception.Errors, error => error.Code == "ProjectKeyInvalid");
+        Assert.Contains(exception.Errors, error => error.Code == "ProjectNameRequired");
+    }
+
+    [Fact]
     public void ProjectKeyCannotBeChangedThroughMutationApi()
     {
         var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, CreatedAt);

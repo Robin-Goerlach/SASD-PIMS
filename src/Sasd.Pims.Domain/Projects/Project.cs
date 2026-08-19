@@ -47,12 +47,16 @@ public sealed class Project
         DateTimeOffset createdAtUtc)
     {
         ValidateIdentityAndTime(id, createdAtUtc);
-        var validatedName = ValidateName(name);
+        var errors = ProjectKey.Validate(key).Concat(ValidateName(name)).ToArray();
+        if (errors.Length > 0)
+        {
+            throw new DomainValidationException(errors);
+        }
 
         return new Project(
             id,
             ProjectKey.Create(key),
-            validatedName,
+            name!.Trim(),
             NormaliseOptionalText(shortDescription),
             createdAtUtc,
             createdAtUtc,
@@ -82,7 +86,7 @@ public sealed class Project
         return new Project(
             id,
             ProjectKey.Create(key),
-            ValidateName(name),
+            ValidatedName(name),
             NormaliseOptionalText(shortDescription),
             createdAtUtc,
             modifiedAtUtc,
@@ -96,7 +100,7 @@ public sealed class Project
             throw ValidationError(nameof(ModifiedAtUtc), "ProjectModifiedAtInvalid", "Modified timestamp must be later than the current UTC timestamp.");
         }
 
-        Name = ValidateName(name);
+        Name = ValidatedName(name);
         ShortDescription = NormaliseOptionalText(shortDescription);
         ModifiedAtUtc = modifiedAtUtc;
         Revision++;
@@ -115,15 +119,23 @@ public sealed class Project
         }
     }
 
-    private static string ValidateName(string? name)
+    private static IReadOnlyList<DomainValidationError> ValidateName(string? name)
     {
         var normalised = name?.Trim() ?? string.Empty;
-        if (normalised.Length == 0)
+        return normalised.Length == 0
+            ? [new(nameof(Name), "ProjectNameRequired", "Project name is required.")]
+            : [];
+    }
+
+    private static string ValidatedName(string? name)
+    {
+        var errors = ValidateName(name);
+        if (errors.Count > 0)
         {
-            throw ValidationError(nameof(Name), "ProjectNameRequired", "Project name is required.");
+            throw new DomainValidationException(errors);
         }
 
-        return normalised;
+        return name!.Trim();
     }
 
     private static string? NormaliseOptionalText(string? value)

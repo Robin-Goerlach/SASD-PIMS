@@ -96,6 +96,11 @@ public sealed class ProjectUseCaseTests
         {
             return Task.FromResult(ProjectToLoad?.Id == id ? ProjectToLoad : null);
         }
+
+        public Task<IReadOnlyList<Project>> ListAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyList<Project>>(ProjectToLoad is null ? [] : [ProjectToLoad]);
+        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

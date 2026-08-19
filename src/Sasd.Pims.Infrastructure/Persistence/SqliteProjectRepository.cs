@@ -37,6 +37,18 @@ public sealed class SqliteProjectRepository(IDbContextFactory<PimsDbContext> con
         return record is null ? null : ToDomain(record);
     }
 
+    public async Task<IReadOnlyList<Project>> ListAsync(CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var records = await context.Projects
+            .AsNoTracking()
+            .OrderBy(project => project.Key)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return records.Select(ToDomain).ToArray();
+    }
+
     private static ProjectRecord ToRecord(Project project) =>
         new()
         {
