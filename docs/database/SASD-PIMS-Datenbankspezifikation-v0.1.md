@@ -110,6 +110,14 @@ Therefore:
 
 Recommended PoC examples may use values such as `SASD-PIMS`; examples are not the final grammar.
 
+P1 decision (`OD-P1-001`):
+
+- trim leading/trailing whitespace and normalise with invariant upper casing before storage and comparison;
+- allow 1 to 64 characters from `A-Z`, `0-9` and `-`;
+- require the first and last character to be alphanumeric;
+- reject repeated or leading/trailing hyphens;
+- persist the normalised key so the unique database index and Domain/Application comparison use identical semantics.
+
 ### 5.4 Indexes
 
 Required for P1:

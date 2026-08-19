@@ -7,5 +7,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Sasd.Pims.Architecture.Tests/Sasd.Pims.Architecture.Tests.csproj" />
+    <Project Path="tests/Sasd.Pims.Domain.Tests/Sasd.Pims.Domain.Tests.csproj" />
   </Folder>
 </Solution>
