@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Sasd.Pims.Infrastructure.Persistence;
 
-public sealed class PimsDbContextFactory(string databasePath) : IDbContextFactory<PimsDbContext>
+public sealed class PimsDbContextFactory(string databasePath, bool pooling = true) : IDbContextFactory<PimsDbContext>
 {
     private readonly string _databasePath = Path.GetFullPath(databasePath);
 
@@ -24,6 +24,7 @@ public sealed class PimsDbContextFactory(string databasePath) : IDbContextFactor
             DataSource = _databasePath,
             ForeignKeys = true,
             DefaultTimeout = 5,
+            Pooling = pooling,
         }.ToString();
 
         return new DbContextOptionsBuilder<PimsDbContext>()
