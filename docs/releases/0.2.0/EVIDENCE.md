@@ -1,8 +1,11 @@
 # Implementation evidence — 0.2.0
 
-**Evidence date:** 2026-08-20  
-**Release source commit:** `9090d50`  
-**Branch:** `codex/0.2.0`  
+**Evidence date:** 2026-08-20
+
+**Release source commit:** `9090d50`
+
+**Branch:** `codex/0.2.0`
+
 **Status:** automated milestone gates passed; manual visual and endurance checks noted below
 
 ## Delivered behavior
