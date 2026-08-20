@@ -41,6 +41,8 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
             entity.Property(project => project.TargetDate).HasColumnType("TEXT");
             entity.HasKey(project => project.Id);
             entity.HasIndex(project => project.Key).IsUnique();
+            entity.HasIndex(project => new { project.Phase, project.ActivityState });
+            entity.HasIndex(project => new { project.ProjectType, project.ProjectArea });
             entity.ToTable("Projects");
         });
 
@@ -82,6 +84,7 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
             entity.HasKey(item => item.Id);
             entity.HasIndex(item => item.ProjectId);
             entity.HasIndex(item => item.RequirementId);
+            entity.HasIndex(item => new { item.Type, item.ProjectId });
             entity.ToTable("ExternalReferences");
             entity.HasOne(item => item.Project).WithMany(project => project.ExternalReferences)
                 .HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Cascade);
@@ -107,6 +110,7 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
             entity.Property(item => item.Revision).IsConcurrencyToken().HasColumnType("INTEGER");
             entity.HasKey(item => item.Id);
             entity.HasIndex(item => new { item.ProjectId, item.Key }).IsUnique();
+            entity.HasIndex(item => new { item.Priority, item.DecisionStatus, item.SourceType });
             entity.HasIndex(item => item.SourceReferenceId);
             entity.ToTable("Requirements");
             entity.HasOne(item => item.Project).WithMany(project => project.Requirements)
@@ -130,6 +134,24 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
                 .HasForeignKey(item => item.RequirementId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne<ExternalReferenceRecord>().WithMany().HasForeignKey(item => item.VerificationReferenceId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChangeEventRecord>(entity =>
+        {
+            entity.Property(item => item.Id).ValueGeneratedNever().HasColumnType("TEXT");
+            entity.Property(item => item.ProjectId).HasColumnType("TEXT");
+            entity.Property(item => item.EntityType).IsRequired().HasMaxLength(32).HasColumnType("TEXT");
+            entity.Property(item => item.EntityId).HasColumnType("TEXT");
+            entity.Property(item => item.EventType).IsRequired().HasMaxLength(64).HasColumnType("TEXT");
+            entity.Property(item => item.OccurredAtUtc).HasColumnType("TEXT");
+            entity.Property(item => item.OldValue).HasMaxLength(256).HasColumnType("TEXT");
+            entity.Property(item => item.NewValue).HasMaxLength(256).HasColumnType("TEXT");
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => new { item.ProjectId, item.OccurredAtUtc });
+            entity.HasIndex(item => new { item.EntityType, item.EntityId });
+            entity.ToTable("ChangeEvents");
+            entity.HasOne(item => item.Project).WithMany(project => project.ChangeEvents)
+                .HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

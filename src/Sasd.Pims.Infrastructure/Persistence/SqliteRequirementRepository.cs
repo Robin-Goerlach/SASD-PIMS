@@ -40,6 +40,9 @@ public sealed class SqliteRequirementRepository(IDbContextFactory<PimsDbContext>
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+        var previous = await context.Requirements.AsNoTracking().SingleOrDefaultAsync(item => item.Id == requirement.Id,
+            cancellationToken).ConfigureAwait(false);
+        if (previous is null || previous.Revision != expectedRevision) return RequirementWriteResult.ConcurrencyConflict;
         var affected = await context.Requirements.Where(item => item.Id == requirement.Id && item.Revision == expectedRevision)
             .ExecuteUpdateAsync(setters => setters.SetProperty(item => item.Title, requirement.Title)
                 .SetProperty(item => item.Description, requirement.Description)
@@ -53,12 +56,34 @@ public sealed class SqliteRequirementRepository(IDbContextFactory<PimsDbContext>
                 .SetProperty(item => item.SourceReferenceId, requirement.SourceReferenceId)
                 .SetProperty(item => item.Revision, requirement.Revision), cancellationToken).ConfigureAwait(false);
         if (affected == 0) return RequirementWriteResult.ConcurrencyConflict;
+        AddRequirementChangeEvents(context, previous, requirement);
         await context.AcceptanceCriteria.Where(item => item.RequirementId == requirement.Id)
             .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
         context.AcceptanceCriteria.AddRange(requirement.AcceptanceCriteria.Select(ToRecord));
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
         return RequirementWriteResult.Saved;
+    }
+
+    private static void AddRequirementChangeEvents(PimsDbContext context, RequirementRecord old, Requirement current)
+    {
+        Add(nameof(Requirement.Priority), old.Priority.ToString(), current.Priority.ToString());
+        Add(nameof(Requirement.DecisionStatus), old.DecisionStatus.ToString(), current.DecisionStatus.ToString());
+        // Decision reasons may contain sensitive prose. Audit only presence/absence, never the content.
+        Add(nameof(Requirement.DecisionReason), Presence(old.DecisionReason), Presence(current.DecisionReason));
+
+        void Add(string eventType, string? oldValue, string? newValue)
+        {
+            if (StringComparer.Ordinal.Equals(oldValue, newValue)) return;
+            context.ChangeEvents.Add(new ChangeEventRecord
+            {
+                Id = Guid.NewGuid(), ProjectId = current.ProjectId, EntityType = "Requirement", EntityId = current.Id,
+                EventType = eventType, OccurredAtUtc = DateTimeOffset.UtcNow,
+                OldValue = oldValue, NewValue = newValue,
+            });
+        }
+
+        static string Presence(string? value) => string.IsNullOrWhiteSpace(value) ? "Absent" : "Present";
     }
 
     public async Task<Requirement?> GetByIdAsync(Guid id, CancellationToken cancellationToken)

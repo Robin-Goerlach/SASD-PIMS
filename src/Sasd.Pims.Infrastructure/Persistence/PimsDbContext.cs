@@ -16,6 +16,8 @@ public sealed class PimsDbContext(DbContextOptions<PimsDbContext> options) : DbC
 
     internal DbSet<ExternalReferenceRecord> ExternalReferences => Set<ExternalReferenceRecord>();
 
+    internal DbSet<ChangeEventRecord> ChangeEvents => Set<ChangeEventRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var project = modelBuilder.Entity<ProjectRecord>();
@@ -24,6 +26,8 @@ public sealed class PimsDbContext(DbContextOptions<PimsDbContext> options) : DbC
         project.Property(item => item.Id).ValueGeneratedNever();
         project.Property(item => item.Key).HasMaxLength(64).IsRequired();
         project.HasIndex(item => item.Key).IsUnique();
+        project.HasIndex(item => new { item.Phase, item.ActivityState });
+        project.HasIndex(item => new { item.ProjectType, item.ProjectArea });
         project.Property(item => item.Name).IsRequired();
         project.Property(item => item.ProjectType).HasMaxLength(32);
         project.Property(item => item.ProjectArea).HasMaxLength(32);
@@ -61,6 +65,7 @@ public sealed class PimsDbContext(DbContextOptions<PimsDbContext> options) : DbC
         requirement.Property(item => item.SourceType).HasConversion<string>().HasMaxLength(32).IsRequired();
         requirement.Property(item => item.Revision).IsConcurrencyToken();
         requirement.HasIndex(item => new { item.ProjectId, item.Key }).IsUnique();
+        requirement.HasIndex(item => new { item.Priority, item.DecisionStatus, item.SourceType });
         requirement.HasOne(item => item.Project).WithMany(item => item.Requirements).HasForeignKey(item => item.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
         requirement.HasOne<ExternalReferenceRecord>().WithMany().HasForeignKey(item => item.SourceReferenceId)
@@ -87,9 +92,23 @@ public sealed class PimsDbContext(DbContextOptions<PimsDbContext> options) : DbC
         reference.Property(item => item.Revision).IsConcurrencyToken();
         reference.HasIndex(item => item.ProjectId);
         reference.HasIndex(item => item.RequirementId);
+        reference.HasIndex(item => new { item.Type, item.ProjectId });
         reference.HasOne(item => item.Project).WithMany(item => item.ExternalReferences)
             .HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Cascade);
         reference.HasOne<RequirementRecord>().WithMany().HasForeignKey(item => item.RequirementId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        var changeEvent = modelBuilder.Entity<ChangeEventRecord>();
+        changeEvent.ToTable("ChangeEvents");
+        changeEvent.HasKey(item => item.Id);
+        changeEvent.Property(item => item.Id).ValueGeneratedNever();
+        changeEvent.Property(item => item.EntityType).HasMaxLength(32).IsRequired();
+        changeEvent.Property(item => item.EventType).HasMaxLength(64).IsRequired();
+        changeEvent.Property(item => item.OldValue).HasMaxLength(256);
+        changeEvent.Property(item => item.NewValue).HasMaxLength(256);
+        changeEvent.HasIndex(item => new { item.ProjectId, item.OccurredAtUtc });
+        changeEvent.HasIndex(item => new { item.EntityType, item.EntityId });
+        changeEvent.HasOne(item => item.Project).WithMany(item => item.ChangeEvents)
+            .HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Cascade);
     }
 }
