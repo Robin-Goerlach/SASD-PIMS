@@ -7,7 +7,9 @@ public sealed partial class Project
 {
     private Project(Guid id, ProjectKey key, string name, string? shortDescription, string? goal,
         string? benefit, string? projectType, string? projectArea, string? responsibility,
-        IReadOnlyList<string> tags, bool isArchived, DateTimeOffset createdAtUtc,
+        IReadOnlyList<string> tags, ProjectPhase phase, ActivityState activityState,
+        DateOnly? targetDate, DateTimeOffset? lastReviewedAtUtc, DateTimeOffset? nextReviewDueAtUtc,
+        bool isArchived, DateTimeOffset createdAtUtc,
         DateTimeOffset modifiedAtUtc, int revision)
     {
         Id = id;
@@ -20,6 +22,11 @@ public sealed partial class Project
         ProjectArea = projectArea;
         Responsibility = responsibility;
         Tags = tags;
+        Phase = phase;
+        ActivityState = activityState;
+        TargetDate = targetDate;
+        LastReviewedAtUtc = lastReviewedAtUtc;
+        NextReviewDueAtUtc = nextReviewDueAtUtc;
         IsArchived = isArchived;
         CreatedAtUtc = createdAtUtc;
         ModifiedAtUtc = modifiedAtUtc;
@@ -39,6 +46,13 @@ public sealed partial class Project
     public string? Responsibility { get; private set; }
     /// <summary>Gets normalised, case-insensitively unique classification tags.</summary>
     public IReadOnlyList<string> Tags { get; private set; }
+    /// <summary>Gets the controlled lifecycle phase; it does not describe whether work is active.</summary>
+    public ProjectPhase Phase { get; private set; }
+    /// <summary>Gets the controlled activity condition independently of phase and archive state.</summary>
+    public ActivityState ActivityState { get; private set; }
+    public DateOnly? TargetDate { get; private set; }
+    public DateTimeOffset? LastReviewedAtUtc { get; private set; }
+    public DateTimeOffset? NextReviewDueAtUtc { get; private set; }
     /// <summary>Gets whether the project is hidden from the active catalog without deleting its data.</summary>
     public bool IsArchived { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; }
@@ -62,7 +76,8 @@ public sealed partial class Project
         ValidateMasterData(key, name, projectType, projectArea, tags);
         return new(id, ProjectKey.Create(key), name!.Trim(), NormaliseText(shortDescription),
             NormaliseText(goal), NormaliseText(benefit), NormaliseCode(projectType),
-            NormaliseCode(projectArea), NormaliseText(responsibility), NormaliseTags(tags), false,
+            NormaliseCode(projectArea), NormaliseText(responsibility), NormaliseTags(tags),
+            ProjectPhase.Idea, ActivityState.NotStarted, null, null, null, false,
             createdAtUtc, createdAtUtc, 1);
     }
 
@@ -81,7 +96,29 @@ public sealed partial class Project
 
         return new(id, ProjectKey.Create(key), name!.Trim(), NormaliseText(shortDescription),
             NormaliseText(goal), NormaliseText(benefit), NormaliseCode(projectType),
-            NormaliseCode(projectArea), NormaliseText(responsibility), NormaliseTags(tags), isArchived,
+            NormaliseCode(projectArea), NormaliseText(responsibility), NormaliseTags(tags),
+            ProjectPhase.Idea, ActivityState.NotStarted, null, null, null, isArchived,
+            createdAtUtc, modifiedAtUtc, revision);
+    }
+
+    /// <summary>Reconstitutes the complete 0.2 project including steering facts.</summary>
+    public static Project Reconstitute(Guid id, string? key, string? name, string? shortDescription,
+        string? goal, string? benefit, string? projectType, string? projectArea,
+        string? responsibility, IEnumerable<string?>? tags, ProjectPhase phase,
+        ActivityState activityState, DateOnly? targetDate, DateTimeOffset? lastReviewedAtUtc,
+        DateTimeOffset? nextReviewDueAtUtc, bool isArchived, DateTimeOffset createdAtUtc,
+        DateTimeOffset modifiedAtUtc, int revision)
+    {
+        ValidateIdentityAndTime(id, createdAtUtc);
+        ValidateMasterData(key, name, projectType, projectArea, tags);
+        ValidateSteeringFacts(phase, activityState, lastReviewedAtUtc, nextReviewDueAtUtc);
+        if (modifiedAtUtc.Offset != TimeSpan.Zero || modifiedAtUtc < createdAtUtc)
+            throw Error(nameof(ModifiedAtUtc), "ProjectModifiedAtInvalid", "Modified timestamp must be UTC and not precede creation.");
+        if (revision < 1) throw Error(nameof(Revision), "ProjectRevisionInvalid", "Project revision must be at least 1.");
+        return new(id, ProjectKey.Create(key), name!.Trim(), NormaliseText(shortDescription),
+            NormaliseText(goal), NormaliseText(benefit), NormaliseCode(projectType),
+            NormaliseCode(projectArea), NormaliseText(responsibility), NormaliseTags(tags), phase,
+            activityState, targetDate, lastReviewedAtUtc, nextReviewDueAtUtc, isArchived,
             createdAtUtc, modifiedAtUtc, revision);
     }
 
@@ -110,6 +147,33 @@ public sealed partial class Project
 
     public void UpdateDetails(string? name, string? shortDescription, DateTimeOffset modifiedAtUtc) =>
         UpdateDetails(name, shortDescription, Goal, Benefit, ProjectType, ProjectArea, Responsibility, Tags, modifiedAtUtc);
+
+    /// <summary>
+    /// Updates steering facts while keeping lifecycle phase, activity and archive independent and advances revision.
+    /// </summary>
+    public void UpdateSteering(ProjectPhase phase, ActivityState activityState, DateOnly? targetDate,
+        DateTimeOffset? lastReviewedAtUtc, DateTimeOffset? nextReviewDueAtUtc, DateTimeOffset modifiedAtUtc)
+    {
+        ValidateLaterModification(modifiedAtUtc);
+        ValidateSteeringFacts(phase, activityState, lastReviewedAtUtc, nextReviewDueAtUtc);
+        Phase = phase;
+        ActivityState = activityState;
+        TargetDate = targetDate;
+        LastReviewedAtUtc = lastReviewedAtUtc;
+        NextReviewDueAtUtc = nextReviewDueAtUtc;
+        AcceptMutation(modifiedAtUtc);
+    }
+
+    /// <summary>Records a completed review and an optional next due date as facts, not a persisted freshness label.</summary>
+    public void MarkReviewed(DateTimeOffset reviewedAtUtc, DateTimeOffset? nextReviewDueAtUtc,
+        DateTimeOffset modifiedAtUtc)
+    {
+        ValidateLaterModification(modifiedAtUtc);
+        ValidateSteeringFacts(Phase, ActivityState, reviewedAtUtc, nextReviewDueAtUtc);
+        LastReviewedAtUtc = reviewedAtUtc;
+        NextReviewDueAtUtc = nextReviewDueAtUtc;
+        AcceptMutation(modifiedAtUtc);
+    }
 
     /// <summary>Archives an active project without deleting its master data.</summary>
     public void Archive(DateTimeOffset modifiedAtUtc)
@@ -159,6 +223,19 @@ public sealed partial class Project
         ValidateCode(nameof(ProjectArea), area, errors);
         ValidateTagValues(tags, errors);
         if (errors.Count > 0) throw new DomainValidationException(errors);
+    }
+
+    private static void ValidateSteeringFacts(ProjectPhase phase, ActivityState activityState,
+        DateTimeOffset? lastReviewedAtUtc, DateTimeOffset? nextReviewDueAtUtc)
+    {
+        if (!Enum.IsDefined(phase)) throw Error(nameof(Phase), "ProjectPhaseInvalid", "Project phase is invalid.");
+        if (!Enum.IsDefined(activityState)) throw Error(nameof(ActivityState), "ActivityStateInvalid", "Activity state is invalid.");
+        if (lastReviewedAtUtc is { Offset: var lastOffset } && lastOffset != TimeSpan.Zero)
+            throw Error(nameof(LastReviewedAtUtc), "ProjectReviewDateInvalid", "Review timestamps must use UTC.");
+        if (nextReviewDueAtUtc is { Offset: var dueOffset } && dueOffset != TimeSpan.Zero)
+            throw Error(nameof(NextReviewDueAtUtc), "ProjectReviewDateInvalid", "Review timestamps must use UTC.");
+        if (lastReviewedAtUtc is not null && nextReviewDueAtUtc is not null && nextReviewDueAtUtc <= lastReviewedAtUtc)
+            throw Error(nameof(NextReviewDueAtUtc), "ProjectReviewDateInvalid", "Next review due must be later than the completed review.");
     }
 
     private static void ValidateCode(string field, string? value, List<DomainValidationError> errors)
