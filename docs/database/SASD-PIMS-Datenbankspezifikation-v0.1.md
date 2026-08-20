@@ -356,3 +356,15 @@ protect the referenced identities.
 
 No reachability, health, provider metadata, attachment content or task state is stored. Existing 0.2
 databases receive a verified pre-migration backup and remain editable after migration and reopen.
+
+## 21. Schema evolution for 0.4.0
+
+Migration `202608200004_SearchTraceabilityAndExchange` is additive to the released 0.3 schema. It creates
+only `ChangeEvents` plus targeted normal indices for Project steering/classification, Requirement controlled
+values and ExternalReference type/Project filtering. It creates no search-result, traceability, export or FTS5
+table. Existing 0.3 Projects, Requirements, AcceptanceCriteria, Blockers and ExternalReferences remain unchanged.
+
+`ChangeEvents` stores stable `Id`, `ProjectId`, controlled technical `EntityType`/`EventType`, `EntityId`,
+`OccurredAtUtc` and optional redacted `OldValue`/`NewValue` strings limited to 256 characters. Normal application
+writes append whitelisted events in the same persistence transaction as the business change. There is no normal
+update/delete path and the table is not an event-sourcing store.

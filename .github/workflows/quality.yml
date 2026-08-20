@@ -34,3 +34,6 @@ jobs:
 
       - name: Test
         run: dotnet test Sasd.Pims.slnx -c Release --no-build
+
+      - name: Audit direct and transitive NuGet packages
+        run: dotnet package list --vulnerable --include-transitive

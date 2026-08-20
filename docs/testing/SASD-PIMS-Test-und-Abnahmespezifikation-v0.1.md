@@ -376,3 +376,17 @@ Add tests only as the 0.1 fields/features are introduced:
 - restart/recovery using migrated data.
 
 Do not pre-write hundreds of future test cases for entities not yet implemented.
+
+## 15. 0.4 verification increment
+
+Automated 0.4 coverage includes all agreed search fields, Project scope, object/controlled filters, sorting,
+empty and bounded high-result sets; traceability source/verification/reference/blocker projection; stable IDs;
+ChangeEvent whitelist, append-only persistence and sensitive-value redaction; exchange format/version/schema,
+canonical values, deterministic collection order, local-reference marker and atomic replacement; deterministic
+Markdown; real 0.3-to-0.4 migration and data preservation; reopen, backup, restore and fault-injection recovery;
+architecture boundaries; and native WinForms accessibility/DPI structure.
+
+The performance gate seeds 500 Projects, 10,000 Requirements, 20,000 ExternalReferences, 2,000 Blockers and
+10,000 ChangeEvents. Twenty representative warmed search/filter operations are measured and the observed P95 is
+compared with the two-second target. No FTS5 decision may be made without this evidence. Physical multi-monitor
+DPI, visible end-to-end navigation and user-observed Save-dialog behavior remain manual evidence.

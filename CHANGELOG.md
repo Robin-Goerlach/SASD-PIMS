@@ -6,6 +6,22 @@ The project intends to follow [Semantic Versioning](https://semver.org/) once re
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-20
+
+### Added
+- Server-side local search across Projects, Requirements, Blockers and ExternalReferences with Project/type filters, sorting and bounded results.
+- Project traceability projection over existing source, verification, reference and blocker relationships.
+- Append-only selective ChangeEvents with an explicit whitelist and redacted sensitive values.
+- Public deterministic `sasd-pims-exchange` JSON format 1.0, JSON Schema and atomic writing.
+- Deterministic Markdown Project profile and native WinForms search/export/traceability workflows.
+- Reproducible 500 Project / 10,000 Requirement / 20,000 reference performance baseline.
+
+### Changed
+- Current database schema is `202608200004_SearchTraceabilityAndExchange`.
+
+### Security
+- Full reference targets and sensitive prose are excluded from audit old/new values; local export targets are marked machine-local and never read or embedded.
+
 ## [0.3.0] - 2026-08-20
 
 ### Added
