@@ -273,9 +273,9 @@ See [`LICENSE`](LICENSE) for the full licence text. Third-party dependencies rem
 
 ## Project status
 
-The `0.0.1-internal` implementation and local release evidence are complete. No public artifact
-has been pushed or released. Milestone acceptance and transition to `0.1.0` remain explicit
-maintainer decisions. Issues, screenshots and release notes distinguish between:
+The technically accepted `0.0.1-internal` implementation and local release evidence are complete.
+Development now targets `0.1.0 — Practical project catalog`. No public release artifact has been
+published. Issues, screenshots and release notes distinguish between:
 
 - planned;
 - implemented;
