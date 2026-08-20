@@ -43,4 +43,8 @@ internal sealed class ProjectRecord
     public List<ProjectTagRecord> Tags { get; set; } = [];
 
     public List<ProjectBlockerRecord> Blockers { get; set; } = [];
+
+    public List<RequirementRecord> Requirements { get; set; } = [];
+
+    public List<ExternalReferenceRecord> ExternalReferences { get; set; } = [];
 }

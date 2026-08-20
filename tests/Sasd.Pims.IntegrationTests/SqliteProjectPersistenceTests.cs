@@ -22,6 +22,7 @@ public sealed class SqliteProjectPersistenceTests
         Assert.Contains("202608190001_InitialProject", appliedMigrations);
         Assert.Contains("202608200001_ProjectCatalog", appliedMigrations);
         Assert.Contains("202608200002_ProjectSteering", appliedMigrations);
+        Assert.Contains("202608200003_RequirementsAndTypedReferences", appliedMigrations);
         Assert.True(File.Exists(database.DatabasePath));
     }
 
