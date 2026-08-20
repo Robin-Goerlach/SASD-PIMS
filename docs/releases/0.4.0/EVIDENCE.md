@@ -6,7 +6,7 @@
 
 **Branch:** `codex/0.4.0`
 
-**Status:** local automated milestone gates passed; GitHub Quality is recorded at final handoff after the branch push
+**Status:** local automated milestone gates and GitHub Quality passed; manual checks are noted below
 
 ## Delivered behavior
 
@@ -97,6 +97,15 @@ A visible packaged start/save/navigation/close walkthrough was not automated bec
 Windows Known Folder database path; launching it under the build identity would risk touching existing user data.
 Physical multi-monitor Per-Monitor V2 DPI inspection, Save-dialog interaction, screen-reader behavior and visual focus
 order remain explicit manual acceptance checks.
+
+## GitHub Quality
+
+GitHub Quality passed for pushed implementation/evidence commit `e89838f`:
+
+- workflow: `Quality`;
+- run: `32384961184`;
+- conclusion: `success`;
+- URL: <https://github.com/Robin-Goerlach/SASD-PIMS/actions/runs/32384961184>.
 
 ## Dependencies, limitations and debt
 
