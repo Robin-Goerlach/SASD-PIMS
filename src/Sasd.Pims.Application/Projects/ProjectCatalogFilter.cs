@@ -11,4 +11,5 @@ public sealed record ProjectCatalogFilter(
     string? Tag = null,
     ProjectPhase? Phase = null,
     ActivityState? ActivityState = null,
+    ReviewFreshness? ReviewFreshness = null,
     bool NeedsAttentionOnly = false);

@@ -19,11 +19,34 @@ public sealed class SqliteExternalReferenceRepository(IDbContextFactory<PimsDbCo
         CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+        var previous = await context.ExternalReferences.AsNoTracking().SingleOrDefaultAsync(item => item.Id == reference.Id,
+            cancellationToken).ConfigureAwait(false);
+        if (previous is null || previous.Revision != expectedRevision) return RequirementWriteResult.ConcurrencyConflict;
         var affected = await context.ExternalReferences.Where(item => item.Id == reference.Id && item.Revision == expectedRevision)
             .ExecuteUpdateAsync(setters => setters.SetProperty(item => item.Type, reference.Type)
                 .SetProperty(item => item.Title, reference.Title).SetProperty(item => item.Target, reference.Target)
                 .SetProperty(item => item.Revision, reference.Revision), cancellationToken).ConfigureAwait(false);
-        return affected == 1 ? RequirementWriteResult.Saved : RequirementWriteResult.ConcurrencyConflict;
+        if (affected != 1) return RequirementWriteResult.ConcurrencyConflict;
+        Add(nameof(ExternalReference.Type), previous.Type.ToString(), reference.Type.ToString());
+        Add(nameof(ExternalReference.Title), Redacted(previous.Title), Redacted(reference.Title));
+        if (!StringComparer.Ordinal.Equals(previous.Target, reference.Target)) Add("TargetChanged", null, null);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        return RequirementWriteResult.Saved;
+
+        void Add(string eventType, string? oldValue, string? newValue)
+        {
+            if (eventType != "TargetChanged" && StringComparer.Ordinal.Equals(oldValue, newValue)) return;
+            context.ChangeEvents.Add(new ChangeEventRecord
+            {
+                Id = Guid.NewGuid(), ProjectId = reference.ProjectId, EntityType = "ExternalReference",
+                EntityId = reference.Id, EventType = eventType, OccurredAtUtc = DateTimeOffset.UtcNow,
+                OldValue = oldValue, NewValue = newValue,
+            });
+        }
+
+        static string Redacted(string value) => value.Length <= 80 ? value : string.Concat(value.AsSpan(0, 80), "…");
     }
 
     public async Task<ExternalReference?> GetByIdAsync(Guid id, CancellationToken cancellationToken)

@@ -354,3 +354,17 @@ Not before demonstrated need:
 - safe error handling demonstrated;
 - concept image remains labelled as a concept;
 - no UI dependency introduced without recorded review.
+
+## 19. 0.4 search, traceability and export increment
+
+- `Ansicht → Globale Suche` and Ctrl+F open one native search workspace.
+- Results show object type, Project context, key/title and a textual match hint; a bounded result explicitly
+  reports when more rows exist.
+- Object-type and Project filters are reset through a visible `Filter zurücksetzen` action.
+- Existing Project phase, activity, review freshness, type, area and tag filters remain combinable and resettable.
+- `Projekt → Traceability` uses a native TreeView projected from existing relationships and supports direct
+  navigation to the corresponding Project workspace.
+- `Datei` exposes full JSON exchange and Markdown Project profile Save dialogs with progress, cancellation and
+  controlled error status text.
+- Search, TreeView, filters and exports retain mnemonics, logical keyboard order, AccessibleName metadata,
+  F1 glossary content, native controls and PerMonitorV2/DPI layout rules. No broad visual redesign is introduced.

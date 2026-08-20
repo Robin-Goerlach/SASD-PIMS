@@ -13,6 +13,11 @@ public sealed class SqliteProjectBlockerRepository(IDbContextFactory<PimsDbConte
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         context.ProjectBlockers.Add(ToRecord(blocker));
+        context.ChangeEvents.Add(new ChangeEventRecord
+        {
+            Id = Guid.NewGuid(), ProjectId = blocker.ProjectId, EntityType = "Blocker", EntityId = blocker.Id,
+            EventType = "Created", OccurredAtUtc = blocker.CreatedAtUtc,
+        });
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -47,12 +52,21 @@ public sealed class SqliteProjectBlockerRepository(IDbContextFactory<PimsDbConte
     {
         // The predicate makes resolution a one-way atomic transition instead of silently overwriting history.
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         var affected = await context.ProjectBlockers.Where(item => item.Id == blocker.Id && item.ResolvedAtUtc == null)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(item => item.ResolvedAtUtc, blocker.ResolvedAtUtc)
                 .SetProperty(item => item.ResolutionNote, blocker.ResolutionNote), cancellationToken)
             .ConfigureAwait(false);
-        return affected == 1;
+        if (affected != 1) return false;
+        context.ChangeEvents.Add(new ChangeEventRecord
+        {
+            Id = Guid.NewGuid(), ProjectId = blocker.ProjectId, EntityType = "Blocker", EntityId = blocker.Id,
+            EventType = "Resolved", OccurredAtUtc = blocker.ResolvedAtUtc!.Value,
+        });
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        return true;
     }
 
     private static ProjectBlockerRecord ToRecord(ProjectBlocker blocker) => new()

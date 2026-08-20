@@ -59,29 +59,30 @@ If two governing sources materially conflict and the baseline does not resolve t
 
 ## 2. Current active milestone
 
-**Active milestone: `0.3.0 — Requirements and typed references`**
+**Active milestone: `0.4.0 — Search, traceability and portable exchange`**
 
-`0.2.0 — Status, reviews and blockers` is implemented, verified, merged to `main`, tagged `v0.2.0` and released.
+`0.3.0 — Requirements and typed references` is implemented, verified, merged to `main`, tagged `v0.3.0` and released.
 
-Implement only `0.3.0` until the user explicitly approves transition to `0.4.0`.
+Implement only `0.4.0` until the user explicitly approves transition to `0.5.0`.
 
 The binding milestone sources are:
 
 ```text
 docs/implementation/DECISION-0.2.0-PROJECT-STEERING-SEMANTICS.md
 docs/implementation/DECISION-0.3.0-REQUIREMENTS-AND-REFERENCES.md
-docs/codex/MILESTONE-0.3.0.md
+docs/implementation/DECISION-0.4.0-SEARCH-TRACEABILITY-AND-EXCHANGE.md
+docs/codex/MILESTONE-0.4.0.md
 ```
 
-Read the 0.3.0 decision note and milestone contract before implementing `0.3.0`. The earlier 0.2.0 decision remains binding for existing project-steering semantics.
+Read the 0.4.0 decision note and milestone contract before implementing `0.4.0`. The earlier 0.2.0 and 0.3.0 decisions remain binding for existing semantics.
 
-### `0.3.0` objective
+### `0.4.0` objective
 
-Establish Requirement traceability and structured provenance through project-bound Requirements, ordered acceptance criteria and manually maintained typed references.
+Make accumulated PIMS information reliably searchable, navigable through existing relationships, selectively auditable and portable.
 
-Required concepts and rules are defined by `docs/implementation/DECISION-0.3.0-REQUIREMENTS-AND-REFERENCES.md`. Preserve controlled vocabularies, immutable project-local Requirement keys, required Project ownership, same-Project reference constraints and centralized target/secret validation.
+Required concepts and rules are defined by `docs/implementation/DECISION-0.4.0-SEARCH-TRACEABILITY-AND-EXCHANGE.md`. Preserve existing ownership and security rules. Use server-side read models, additive ChangeEvents, projected traceability and deterministic atomic exchange exports.
 
-Do not introduce Requirement relationships, hard delete, generic workflows, attachments, document/chat copies, task management, provider APIs/authentication, automatic link checking, reachability persistence or `0.4.0` search/exchange functionality.
+Do not introduce import, Requirement relationships, generic relationship/audit engines, FTS5 without measurement, embedded files, provider integration, report snapshots, event sourcing or `0.5.0` functionality.
 
 ### Existing `0.2.0` semantics to preserve
 
@@ -159,11 +160,11 @@ Help text and source documentation must use the same domain semantics.
 
 ### Milestone boundary
 
-Do not pull `0.4.0` or later functionality forward.
+Do not pull `0.5.0` or later functionality forward.
 
-During this explicitly authorized autonomous milestone run, Codex may implement, test, debug, create coherent commits and push the `codex/0.3.0` branch. Stop only for decisions that materially change product semantics, architecture, security/recovery guarantees, licence obligations, public exchange contracts, supported platform or milestone scope.
+During this explicitly authorized autonomous milestone run, Codex may implement, test, debug, create coherent commits and push the `codex/0.4.0` branch. Stop only for decisions that materially change product semantics, architecture, security/recovery guarantees, licence obligations, public exchange contracts, supported platform or milestone scope.
 
-Do not merge to `main`, create `v0.3.0`, publish a GitHub Release or begin `0.4.0` without explicit user approval.
+Do not merge to `main`, create `v0.4.0`, publish a GitHub Release or begin `0.5.0` without explicit user approval.
 
 ---
 

@@ -65,6 +65,7 @@ public sealed class SqliteProjectRepository(IDbContextFactory<PimsDbContext> con
             return ProjectWriteResult.ConcurrencyConflict;
         }
 
+        AddProjectChangeEvents(context, record, project);
         CopyEditableValues(project, record);
         // Replacing this small owned classification set keeps persistence straightforward while the project
         // revision remains the single aggregate-level concurrency boundary.
@@ -124,6 +125,29 @@ public sealed class SqliteProjectRepository(IDbContextFactory<PimsDbContext> con
         record.IsArchived = project.IsArchived;
         record.ModifiedAtUtc = project.ModifiedAtUtc;
         record.Revision = project.Revision;
+    }
+
+    private static void AddProjectChangeEvents(PimsDbContext context, ProjectRecord old, Project current)
+    {
+        Add(nameof(Project.Phase), old.Phase.ToString(), current.Phase.ToString());
+        Add(nameof(Project.ActivityState), old.ActivityState.ToString(), current.ActivityState.ToString());
+        Add(nameof(Project.TargetDate), old.TargetDate?.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
+            current.TargetDate?.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+        Add(nameof(Project.LastReviewedAtUtc), old.LastReviewedAtUtc?.ToString("O"), current.LastReviewedAtUtc?.ToString("O"));
+        Add(nameof(Project.NextReviewDueAtUtc), old.NextReviewDueAtUtc?.ToString("O"), current.NextReviewDueAtUtc?.ToString("O"));
+        if (old.IsArchived != current.IsArchived)
+            Add(current.IsArchived ? "Archived" : "Reactivated", old.IsArchived.ToString(), current.IsArchived.ToString());
+
+        void Add(string eventType, string? oldValue, string? newValue)
+        {
+            if (StringComparer.Ordinal.Equals(oldValue, newValue)) return;
+            context.ChangeEvents.Add(new ChangeEventRecord
+            {
+                Id = Guid.NewGuid(), ProjectId = current.Id, EntityType = "Project", EntityId = current.Id,
+                EventType = eventType, OccurredAtUtc = current.ModifiedAtUtc,
+                OldValue = oldValue, NewValue = newValue,
+            });
+        }
     }
 
     private static Project ToDomain(ProjectRecord record) =>

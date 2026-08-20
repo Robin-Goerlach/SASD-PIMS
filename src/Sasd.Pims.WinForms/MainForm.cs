@@ -1,6 +1,9 @@
 using Sasd.Pims.Application.Projects;
 using Sasd.Pims.Application.Recovery;
 using Sasd.Pims.Application.Requirements;
+using Sasd.Pims.Application.Search;
+using Sasd.Pims.Application.Traceability;
+using Sasd.Pims.Application.Exchange;
 using System.Globalization;
 
 namespace Sasd.Pims.WinForms;
@@ -30,10 +33,19 @@ public sealed class MainForm : Form
     private readonly string _databasePath;
     private readonly string _rollbackDirectory;
     private readonly string _version;
+    private readonly SearchPims? _globalSearch;
+    private readonly ITraceabilityReader? _traceability;
+    private readonly IPortableExchangeService? _portableExchange;
     private readonly ListBox _projects = new();
     private readonly TextBox _search = new();
     private readonly CheckBox _includeArchived = new();
     private readonly CheckBox _needsAttention = new();
+    private readonly ComboBox _phaseFilter = new() { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox _activityFilter = new() { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox _reviewFilter = new() { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly TextBox _typeFilter = new();
+    private readonly TextBox _areaFilter = new();
+    private readonly TextBox _tagFilter = new();
     private readonly Label _details = new();
     private readonly Button _edit = new();
     private readonly Button _archiveButton = new();
@@ -52,7 +64,8 @@ public sealed class MainForm : Form
         OpenExternalReference openReference,
         ExportProject exportProject,
         CreateDatabaseBackup createBackup, RestoreDatabaseBackup restoreBackup, string databasePath,
-        string rollbackDirectory, string applicationVersion)
+        string rollbackDirectory, string applicationVersion, SearchPims? globalSearch = null,
+        ITraceabilityReader? traceability = null, IPortableExchangeService? portableExchange = null)
     {
         _create = createProject;
         _load = loadProject;
@@ -76,6 +89,9 @@ public sealed class MainForm : Form
         _databasePath = databasePath;
         _rollbackDirectory = rollbackDirectory;
         _version = applicationVersion;
+        _globalSearch = globalSearch;
+        _traceability = traceability;
+        _portableExchange = portableExchange;
         InitializeControls();
     }
 
@@ -118,7 +134,13 @@ public sealed class MainForm : Form
         _needsAttention.AutoSize = true;
         _needsAttention.AccessibleName = "Nur Projekte mit Handlungsbedarf anzeigen";
         _needsAttention.CheckedChanged += async (_, _) => await RefreshProjectsAsync();
-        var filters = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 4 };
+        ConfigureFilter(_phaseFilter, "Projektphase filtern", Enum.GetValues<Sasd.Pims.Domain.Projects.ProjectPhase>().Cast<object>());
+        ConfigureFilter(_activityFilter, "Aktivitätszustand filtern", Enum.GetValues<Sasd.Pims.Domain.Projects.ActivityState>().Cast<object>());
+        ConfigureFilter(_reviewFilter, "Review-Aktualität filtern", Enum.GetValues<Sasd.Pims.Domain.Projects.ReviewFreshness>().Cast<object>());
+        ConfigureTextFilter(_typeFilter, "Projektart filtern"); ConfigureTextFilter(_areaFilter, "Projektbereich filtern");
+        ConfigureTextFilter(_tagFilter, "Tag filtern");
+        var resetFilters = Button("Filter &zurücksetzen", "Alle Projektfilter zurücksetzen", ResetProjectFiltersClicked);
+        var filters = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 8, RowCount = 2 };
         filters.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         filters.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         filters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -127,6 +149,10 @@ public sealed class MainForm : Form
         filters.Controls.Add(_search, 1, 0);
         filters.Controls.Add(_includeArchived, 2, 0);
         filters.Controls.Add(_needsAttention, 3, 0);
+        filters.Controls.Add(_phaseFilter, 0, 1); filters.Controls.Add(_activityFilter, 1, 1);
+        filters.Controls.Add(_reviewFilter, 2, 1); filters.Controls.Add(_typeFilter, 3, 1);
+        filters.Controls.Add(_areaFilter, 4, 1); filters.Controls.Add(_tagFilter, 5, 1);
+        filters.Controls.Add(resetFilters, 6, 1);
 
         _projects.Dock = DockStyle.Fill;
         _projects.AccessibleName = "Projektliste";
@@ -156,11 +182,26 @@ public sealed class MainForm : Form
         var statusStrip = new StatusStrip();
         statusStrip.Items.Add(_status);
         var menu = new MenuStrip();
+        var fileMenu = new ToolStripMenuItem("&Datei");
+        var fullExport = new ToolStripMenuItem("&Vollständiger JSON-Export");
+        fullExport.Click += FullExportClicked;
+        var markdownExport = new ToolStripMenuItem("&Markdown-Projektsteckbrief");
+        markdownExport.Click += MarkdownExportClicked;
+        fileMenu.DropDownItems.AddRange([fullExport, markdownExport]);
+        menu.Items.Add(fileMenu);
         var projectMenu = new ToolStripMenuItem("&Projekt");
         var requirementsMenu = new ToolStripMenuItem("&Anforderungen und Referenzen");
         requirementsMenu.Click += RequirementsClicked;
         projectMenu.DropDownItems.Add(requirementsMenu);
+        var traceability = new ToolStripMenuItem("&Traceability");
+        traceability.Click += TraceabilityClicked;
+        projectMenu.DropDownItems.Add(traceability);
         menu.Items.Add(projectMenu);
+        var viewMenu = new ToolStripMenuItem("&Ansicht");
+        var globalSearch = new ToolStripMenuItem("&Globale Suche (Strg+F)") { ShortcutKeys = Keys.Control | Keys.F };
+        globalSearch.Click += SearchClicked;
+        viewMenu.DropDownItems.Add(globalSearch);
+        menu.Items.Add(viewMenu);
         var helpMenu = new ToolStripMenuItem("&Hilfe");
         var glossary = new ToolStripMenuItem("&Hilfe und Glossar (F1)");
         glossary.Click += (_, _) => { using var help = new HelpForm(); help.ShowDialog(this); };
@@ -177,12 +218,77 @@ public sealed class MainForm : Form
         KeyPreview = true;
         KeyDown += (_, args) =>
         {
+            if (args.Control && args.KeyCode == Keys.F) { SearchClicked(this, EventArgs.Empty); args.Handled = true; return; }
             if (args.KeyCode != Keys.F1) return;
             using var help = new HelpForm();
             help.ShowDialog(this);
             args.Handled = true;
         };
         SetSelectionState(false);
+    }
+
+    private async void SearchClicked(object? sender, EventArgs e)
+    {
+        if (_globalSearch is null) { _status.Text = "Globale Suche ist nicht verfügbar."; return; }
+        var projects = (_projects.DataSource as IEnumerable<ProjectSummaryDto>)?.ToArray() ?? [];
+        using var form = new SearchForm(_globalSearch, projects, _selected?.Id);
+        if (form.ShowDialog(this) != DialogResult.OK || form.SelectedResult is null) return;
+        await NavigateToAsync(form.SelectedResult.ProjectId, form.SelectedResult.ObjectType);
+    }
+
+    private async void TraceabilityClicked(object? sender, EventArgs e)
+    {
+        if (_selected is null) { _status.Text = "Bitte wählen Sie ein Projekt aus."; return; }
+        if (_traceability is null) { _status.Text = "Traceability ist nicht verfügbar."; return; }
+        using var form = new TraceabilityForm(_selected.Id, _traceability);
+        if (form.ShowDialog(this) != DialogResult.OK || form.SelectedNode is null) return;
+        var type = form.SelectedNode.Type switch
+        {
+            TraceabilityNodeType.Requirement or TraceabilityNodeType.AcceptanceCriterion or TraceabilityNodeType.ExternalReference => SearchObjectType.Requirement,
+            TraceabilityNodeType.Blocker => SearchObjectType.Blocker,
+            _ => SearchObjectType.Project,
+        };
+        await NavigateToAsync(form.SelectedNode.ProjectId, type);
+    }
+
+    private async Task NavigateToAsync(Guid projectId, SearchObjectType objectType)
+    {
+        await RefreshProjectsAsync(projectId);
+        if (_selected is null) return;
+        if (objectType == SearchObjectType.Blocker) BlockersClicked(this, EventArgs.Empty);
+        else if (objectType is SearchObjectType.Requirement or SearchObjectType.ExternalReference)
+            RequirementsClicked(this, EventArgs.Empty);
+        _status.Text = "Suchergebnis geöffnet.";
+    }
+
+    private async void FullExportClicked(object? sender, EventArgs e)
+    {
+        if (_portableExchange is null) { _status.Text = "Vollständiger Export ist nicht verfügbar."; return; }
+        using var dialog = new SaveFileDialog { AddExtension = true, DefaultExt = "json",
+            Filter = "SASD-PIMS-Austausch (*.json)|*.json|Alle Dateien (*.*)|*.*",
+            FileName = "sasd-pims-exchange.json", OverwritePrompt = true, Title = "Vollständigen JSON-Export speichern" };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        try { UseWaitCursor = true; _status.Text = "Export läuft …"; await _portableExchange.ExportJsonAsync(dialog.FileName,
+            _version, DateTimeOffset.UtcNow); _status.Text = "Vollständiger JSON-Export erstellt und geprüft."; }
+        catch (OperationCanceledException) { _status.Text = "Export abgebrochen."; }
+        catch (Exception exception) { _status.Text = $"Export fehlgeschlagen: {exception.Message}"; }
+        finally { UseWaitCursor = false; }
+    }
+
+    private async void MarkdownExportClicked(object? sender, EventArgs e)
+    {
+        if (_selected is null) { _status.Text = "Bitte wählen Sie ein Projekt aus."; return; }
+        if (_portableExchange is null) { _status.Text = "Markdown-Export ist nicht verfügbar."; return; }
+        using var dialog = new SaveFileDialog { AddExtension = true, DefaultExt = "md",
+            Filter = "Markdown (*.md)|*.md|Alle Dateien (*.*)|*.*", FileName = $"{_selected.Key}-projektsteckbrief.md",
+            OverwritePrompt = true, Title = "Markdown-Projektsteckbrief speichern" };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        try { UseWaitCursor = true; _status.Text = "Projektsteckbrief wird erstellt …";
+            await _portableExchange.ExportProjectMarkdownAsync(_selected.Id, dialog.FileName, DateTimeOffset.UtcNow);
+            _status.Text = "Markdown-Projektsteckbrief erstellt."; }
+        catch (OperationCanceledException) { _status.Text = "Export abgebrochen."; }
+        catch (Exception exception) { _status.Text = $"Export fehlgeschlagen: {exception.Message}"; }
+        finally { UseWaitCursor = false; }
     }
 
     private static Button Button(string text, string accessibleName, EventHandler handler)
@@ -197,6 +303,24 @@ public sealed class MainForm : Form
         button.AutoSize = true;
         button.AccessibleName = accessibleName;
         button.Click += handler;
+    }
+
+    private void ConfigureFilter(ComboBox combo, string accessibleName, IEnumerable<object> values)
+    {
+        combo.AccessibleName = accessibleName; combo.Items.Add("Alle");
+        foreach (var value in values) combo.Items.Add(value);
+        combo.SelectedIndex = 0; combo.SelectedIndexChanged += async (_, _) => await RefreshProjectsAsync();
+    }
+
+    private void ConfigureTextFilter(TextBox textBox, string accessibleName)
+    { textBox.AccessibleName = accessibleName; textBox.PlaceholderText = accessibleName; textBox.TextChanged += async (_, _) => await RefreshProjectsAsync(); }
+
+    private async void ResetProjectFiltersClicked(object? sender, EventArgs e)
+    {
+        _search.Clear(); _includeArchived.Checked = false; _needsAttention.Checked = false;
+        _phaseFilter.SelectedIndex = 0; _activityFilter.SelectedIndex = 0; _reviewFilter.SelectedIndex = 0;
+        _typeFilter.Clear(); _areaFilter.Clear(); _tagFilter.Clear(); await RefreshProjectsAsync();
+        _status.Text = "Projektfilter zurückgesetzt.";
     }
 
     private async void NewClicked(object? sender, EventArgs e)
@@ -288,6 +412,10 @@ public sealed class MainForm : Form
         preferredId ??= (_projects.SelectedItem as ProjectSummaryDto)?.Id;
         var result = await _list.ExecuteAsync(new ProjectCatalogFilter(
             IncludeArchived: _includeArchived.Checked, SearchText: _search.Text,
+            ProjectType: _typeFilter.Text, ProjectArea: _areaFilter.Text, Tag: _tagFilter.Text,
+            Phase: _phaseFilter.SelectedItem as Sasd.Pims.Domain.Projects.ProjectPhase?,
+            ActivityState: _activityFilter.SelectedItem as Sasd.Pims.Domain.Projects.ActivityState?,
+            ReviewFreshness: _reviewFilter.SelectedItem as Sasd.Pims.Domain.Projects.ReviewFreshness?,
             NeedsAttentionOnly: _needsAttention.Checked));
         if (result.Status != ProjectOperationStatus.Success || result.Value is null)
         {

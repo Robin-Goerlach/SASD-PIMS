@@ -47,4 +47,6 @@ internal sealed class ProjectRecord
     public List<RequirementRecord> Requirements { get; set; } = [];
 
     public List<ExternalReferenceRecord> ExternalReferences { get; set; } = [];
+
+    public List<ChangeEventRecord> ChangeEvents { get; set; } = [];
 }

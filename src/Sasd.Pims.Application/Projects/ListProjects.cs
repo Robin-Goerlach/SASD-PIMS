@@ -53,6 +53,7 @@ public sealed class ListProjects
             .Where(project => filter.Phase is null || project.Phase == filter.Phase)
             .Where(project => filter.ActivityState is null || project.ActivityState == filter.ActivityState)
             .Select(project => CreateSummary(project, projectsWithOpenBlockers.Contains(project.Id)))
+            .Where(summary => filter.ReviewFreshness is null || summary.ReviewFreshness == filter.ReviewFreshness)
             .Where(summary => !filter.NeedsAttentionOnly || summary.NeedsAttention)
             .ToArray();
         return ProjectOperationResult.Success<IReadOnlyList<ProjectSummaryDto>>(summaries);

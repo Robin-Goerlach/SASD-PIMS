@@ -42,6 +42,8 @@ The following capabilities are **planned**, not necessarily implemented.
 | Project status | Status, review information and blockers | 0.2.0 |
 | Requirements | Structured requirements and acceptance information | 0.3.0 |
 | References | Typed links to repositories, chats, documents, files and URLs | 0.3.0 |
+| Search and traceability | Local bounded search and navigation over existing relationships | 0.4.0 |
+| Portable exchange | Atomic JSON exchange 1.0 and Markdown Project profile | 0.4.0 |
 | Search | Local search and filtering across supported information | 0.4.0 |
 | Import / export | Versioned, validated exchange formats | 0.4.0 / 0.5.0 |
 | Backup / restore | Verifiable local backup and staged restore | 0.0.1 PoC, hardened by MVP |
@@ -243,6 +245,7 @@ Security issues must not be reported through a public issue when they expose a v
 | `0.1.0` | Usable local project catalog | First practical version |
 | `0.2.0` | Status, reviews and blockers | Project steering |
 | `0.3.0` | Requirements and typed references | Traceability foundation |
+| `0.4.0` | Search, traceability and portable exchange | Retrieval and export-only exchange |
 | `0.4.0` | Search, traceability and portable export | Information retrieval |
 | `0.5.0` | Complete mandatory MVP scope | MVP |
 | `0.6.0` | Milestones, decisions and risks | Governance |

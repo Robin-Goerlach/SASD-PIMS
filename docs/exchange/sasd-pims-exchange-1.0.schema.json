@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.sasd.de/pims/sasd-pims-exchange-1.0.schema.json",
+  "title": "SASD PIMS Exchange 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formatId", "formatVersion", "productVersion", "databaseSchemaVersion", "exportedAtUtc", "projects", "requirements", "blockers", "externalReferences", "changeEvents"],
+  "properties": {
+    "formatId": { "const": "sasd-pims-exchange" },
+    "formatVersion": { "const": "1.0" },
+    "productVersion": { "type": "string", "minLength": 1 },
+    "databaseSchemaVersion": { "type": "string", "minLength": 1 },
+    "exportedAtUtc": { "type": "string", "format": "date-time" },
+    "projects": { "type": "array", "items": { "$ref": "#/$defs/project" } },
+    "requirements": { "type": "array", "items": { "$ref": "#/$defs/requirement" } },
+    "blockers": { "type": "array", "items": { "$ref": "#/$defs/blocker" } },
+    "externalReferences": { "type": "array", "items": { "$ref": "#/$defs/reference" } },
+    "changeEvents": { "type": "array", "items": { "$ref": "#/$defs/changeEvent" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "format": "uuid" },
+    "nullableId": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+    "project": { "type": "object", "required": ["id", "key", "name", "phase", "activityState", "isArchived", "tags"], "properties": { "id": { "$ref": "#/$defs/id" }, "key": { "type": "string" }, "name": { "type": "string" }, "phase": { "enum": ["Idea", "Preparation", "Execution", "Validation", "Closure"] }, "activityState": { "enum": ["NotStarted", "Active", "Paused", "Completed", "Cancelled"] }, "isArchived": { "type": "boolean" }, "tags": { "type": "array", "items": { "type": "string" } } }, "additionalProperties": true },
+    "requirement": { "type": "object", "required": ["id", "projectId", "key", "title", "priority", "decisionStatus", "sourceType", "acceptanceCriteria"], "properties": { "id": { "$ref": "#/$defs/id" }, "projectId": { "$ref": "#/$defs/id" }, "key": { "type": "string" }, "title": { "type": "string" }, "priority": { "enum": ["Must", "Should", "Could"] }, "decisionStatus": { "enum": ["Proposed", "Approved", "Deferred", "Rejected"] }, "sourceType": { "enum": ["Internal", "Stakeholder", "Regulatory", "Research", "ExistingSystem", "External", "Other"] }, "acceptanceCriteria": { "type": "array" } }, "additionalProperties": true },
+    "blocker": { "type": "object", "required": ["id", "projectId", "summary", "createdAtUtc"], "properties": { "id": { "$ref": "#/$defs/id" }, "projectId": { "$ref": "#/$defs/id" }, "summary": { "type": "string" }, "createdAtUtc": { "type": "string", "format": "date-time" } }, "additionalProperties": true },
+    "reference": { "type": "object", "required": ["id", "projectId", "type", "title", "target", "locationScope"], "properties": { "id": { "$ref": "#/$defs/id" }, "projectId": { "$ref": "#/$defs/id" }, "requirementId": { "$ref": "#/$defs/nullableId" }, "type": { "type": "string" }, "title": { "type": "string" }, "target": { "type": "string" }, "locationScope": { "enum": ["machineLocal", "portableTarget"] } }, "additionalProperties": true },
+    "changeEvent": { "type": "object", "required": ["id", "projectId", "entityType", "entityId", "eventType", "occurredAtUtc"], "properties": { "id": { "$ref": "#/$defs/id" }, "projectId": { "$ref": "#/$defs/id" }, "entityType": { "type": "string" }, "entityId": { "$ref": "#/$defs/id" }, "eventType": { "type": "string" }, "occurredAtUtc": { "type": "string", "format": "date-time" } }, "additionalProperties": true }
+  }
+}
