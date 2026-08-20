@@ -71,13 +71,42 @@ The application-level contract should use `Microsoft.Extensions.Logging`.
 
 | ID | Decision | Latest decision point |
 | --- | --- | --- |
-| OD-P1-001 | Exact human-readable project-key syntax beyond stable/non-empty/unique | Before implementing the Project aggregate |
-| OD-P1-002 | Concrete file logging provider | Before structured file logging implementation |
 | OD-P1-003 | Framework-dependent vs self-contained default package | End of `0.0.1-internal` |
 | OD-01-001 | Final project lifecycle/archive/deletion semantics | Before `0.1.0` lifecycle feature |
 | OD-01-002 | Exact controlled vocabularies for project type/area | Before `0.1.0` reference data seed |
 
 These decisions must not be guessed inside UI event handlers or persistence mappings.
+
+### Resolved P1 implementation decision
+
+`OD-P1-001` is resolved before implementation of the Project aggregate. P1 project keys are trimmed, normalised to
+invariant upper case, limited to 1-64 characters from `A-Z`, `0-9` and `-`, start and end with an alphanumeric
+character, and do not contain repeated hyphens. The normalised value is stored and compared for uniqueness. The
+database specification contains the persistence-level rule.
+
+`OD-P1-002` is resolved for P1 with a small local JSON Lines provider implemented behind
+`Microsoft.Extensions.Logging.ILoggerProvider`. It writes daily files with a 14-day retention window and deliberately
+records no project payload or full local paths. Serilog is not introduced because the P1 logging needs do not justify
+the additional dependency; the application contract remains provider-neutral.
+
+`OD-P1-003` is resolved at the end of P1 in favour of a self-contained `win-x64` ZIP as the
+default package for `0.1.0`. The measured P1 publish was 125.10 MiB self-contained versus
+8.20 MiB framework-dependent. The larger package is accepted for the internal/local-first
+distribution because it removes the separate .NET Desktop Runtime prerequisite. The
+framework-dependent publish remains a supported evaluation output, not the default artifact.
+
+### Resolved 0.1 implementation decisions
+
+`OD-01-001` is resolved for `0.1.0` as a separate reversible archive flag. Archiving removes a
+project from the normal active catalog without deleting its master data; archived projects remain
+findable and can be reactivated. The normal UI exposes no physical project deletion. Broader phase,
+pause and discontinuation semantics remain deferred to the status-focused `0.2.0` milestone.
+
+`OD-01-002` is resolved without seeding an unproven organisation-wide vocabulary. `0.1.0` stores
+optional, language-neutral project-type and project-area codes and validates their stable technical
+syntax. Users can classify and filter projects by those codes; controlled reference-data catalogs and
+their administration remain deferred until real catalog usage supplies the vocabulary. Simple tags are
+stored as a normalised relation rather than delimiter-separated project data.
 
 ## 6. Approved first implementation scope
 

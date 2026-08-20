@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Sasd.Pims.Application\Sasd.Pims.Application.csproj" />
     <ProjectReference Include="..\Sasd.Pims.Domain\Sasd.Pims.Domain.csproj" />
   </ItemGroup>

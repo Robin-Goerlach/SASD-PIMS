@@ -5,4 +5,11 @@
     <Project Path="src/Sasd.Pims.Infrastructure/Sasd.Pims.Infrastructure.csproj" />
     <Project Path="src/Sasd.Pims.WinForms/Sasd.Pims.WinForms.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Sasd.Pims.Architecture.Tests/Sasd.Pims.Architecture.Tests.csproj" />
+    <Project Path="tests/Sasd.Pims.Application.Tests/Sasd.Pims.Application.Tests.csproj" />
+    <Project Path="tests/Sasd.Pims.Domain.Tests/Sasd.Pims.Domain.Tests.csproj" />
+    <Project Path="tests/Sasd.Pims.IntegrationTests/Sasd.Pims.IntegrationTests.csproj" />
+    <Project Path="tests/Sasd.Pims.WinForms.Tests/Sasd.Pims.WinForms.Tests.csproj" />
+  </Folder>
 </Solution>

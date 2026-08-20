@@ -6,18 +6,40 @@ The project intends to follow [Semantic Versioning](https://semver.org/) once re
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-20
+
 ### Added
-- Repository preparation baseline.
-- Initial project governance and GitHub planning documents.
-- Version-controlled Lastenheft, Pflichtenheft and architecture implementation baseline.
-- Ready-to-Code database, UI/UX and test specifications for the vertical slice.
-- `.gitattributes` line-ending and binary-file policy.
-- Clearly labelled generated UI concept image in the README and screenshot asset policy.
+- Practical German master-detail project catalog with create, view, edit, search and selection.
+- Goal, benefit, project-type/area codes, responsibility and normalised tags.
+- Reversible archive/reactivation without a normal hard-delete operation.
+- Optimistic revision conflict detection for project updates.
+- Additive SQLite migration from the accepted 0.0.1 schema with verified pre-migration backup.
+- Complete project-data JSON export schema `1.1-internal`.
 
 ### Changed
-- Align README with the actual Apache-2.0 licence and Windows 11 x64 baseline.
-- Refine the first internal release task to compare framework-dependent and self-contained publishing.
+- Self-contained `win-x64` ZIP is the default local package.
+- Current database schema is `202608200001_ProjectCatalog`.
+
+### Security
+- Migration, backup and restore preserve checksum, schema, integrity and rollback validation.
+
+## [0.0.1-internal] - 2026-08-19
+
+Internal architecture proof; not a supported production release.
+
+### Added
+- Minimal Project creation, validation, SQLite persistence and reload.
+- Native WinForms project editor with keyboard/accessibility metadata and Per-Monitor V2 DPI mode.
+- Structured local JSON Lines diagnostics with safe error correlation.
+- Versioned JSON Project export.
+- Verified SQLite backup packages and staged restore with rollback protection.
+- Domain, application, integration, recovery and architecture tests.
+- Windows build/test workflow and reproducible `win-x64` ZIP packaging script.
+
+### Changed
+- Select self-contained `win-x64` ZIP as the default package for `0.1.0` from measured evidence.
 
 ### Fixed
 
 ### Security
+- Reject backup checksum, format, schema and SQLite-integrity failures before active data replacement.

@@ -1,8 +1,8 @@
 # SASD PIMS
 
-> **Status:** Ready-to-code baseline / pre-implementation.  
-> Requirements, technical specification, architecture baseline, implementation specifications and roadmap are versioned in this repository.  
-> **No production-ready application or installable release is available yet.**
+> **Status:** `0.1.0` practical local project catalog implemented and under release verification.
+> It supports project master data, search, editing, reversible archiving, SQLite persistence,
+> JSON export and verified backup/restore.
 
 **SASD PIMS (Project Information Management System)** is a planned local-first Windows desktop application for maintaining the information that describes and governs SASD software projects. It is intentionally not a general task-management platform or Jira replacement.
 
@@ -176,48 +176,44 @@ The project directories are placeholders until the vertical slice is scaffolded.
 
 ## Installation
 
-### Current status
+### Developer prerequisites
 
-There is **no installable release yet**.
-
-Until the first vertical slice and release artifact exist, any installation instructions claiming a finished installer or executable would be misleading.
-
-### Planned developer prerequisites
-
-Once the solution is scaffolded, the expected development prerequisites are:
+To build the current vertical slice:
 
 - Windows 11 x64;
 - .NET 10 SDK;
 - Git;
 - an IDE/editor with C# and Windows Forms support.
 
-Expected build commands after the solution exists:
+Build and test from the repository root:
 
 ```powershell
-dotnet restore
-dotnet build
-dotnet test
+dotnet restore Sasd.Pims.slnx
+dotnet build Sasd.Pims.slnx -c Release
+dotnet test Sasd.Pims.slnx -c Release
 ```
 
-These commands are part of the intended repository contract; they are not evidence that the solution already exists.
+Create the self-contained 0.1.0 ZIP (generated files remain under ignored `artifacts/`):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-0.1.0.ps1
+```
 
 ## Usage
 
-No end-user workflow is available yet.
-
-The first executable vertical slice (`0.0.1-internal`) is intended to prove one complete path:
+Version `0.1.0` provides this local workflow:
 
 1. start the application;
-2. create a project;
-3. validate input;
-4. persist it to SQLite;
-5. close the application;
-6. reopen and load the project;
-7. exercise a minimal export;
-8. exercise backup and restore;
-9. verify logging and failure handling.
+2. list, search and select projects;
+3. create and centrally validate project master data;
+4. view and edit projects while detecting stale revisions;
+5. archive or reactivate projects without deleting data;
+6. close and reopen with the same SQLite data;
+7. export a complete project as versioned JSON;
+8. create and restore verified backups.
 
-Version `0.1.0` will then turn that proof into a practically usable local project catalog.
+Runtime data is stored under `%LOCALAPPDATA%\SASD\PIMS`; user-selected exports and backups
+are written to the selected path. See `docs/releases/0.1.0/QUICK-START.md` for operation details.
 
 ## Privacy and security
 
@@ -275,7 +271,9 @@ See [`LICENSE`](LICENSE) for the full licence text. Third-party dependencies rem
 
 ## Project status
 
-This repository is in the preparation phase. Documentation can be mature while implementation is still absent. Issues, screenshots and release notes must therefore distinguish between:
+The technically accepted `0.0.1-internal` implementation and local release evidence are complete.
+Development now targets `0.1.0 — Practical project catalog`. No public release artifact has been
+published. Issues, screenshots and release notes distinguish between:
 
 - planned;
 - implemented;

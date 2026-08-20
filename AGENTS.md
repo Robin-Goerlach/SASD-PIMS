@@ -59,37 +59,49 @@ If two governing sources materially conflict and the baseline does not resolve t
 
 ## 2. Current active milestone
 
-**Active milestone: `0.0.1-internal — Vertical architecture slice`**
+**Active milestone: `0.1.0 — Practical project catalog`**
 
-Until the user explicitly changes the active milestone or the repository baseline is updated, implement only work required for `0.0.1-internal`.
+`0.0.1-internal — Vertical architecture slice` has been implemented and technically verified. Its implementation evidence is recorded under:
 
-The first vertical slice must prove:
+```text
+docs/releases/0.0.1-internal/EVIDENCE.md
+```
 
-- controlled startup and shutdown;
-- creation of one minimal Project;
-- central validation;
-- persistence to real SQLite;
-- complete application/service reconstruction and reload;
-- structured logging and safe user-visible failure handling;
-- minimal versioned JSON export;
-- verified backup;
-- staged restore;
-- negative recovery/fault paths;
-- automated unit/integration/architecture tests;
-- keyboard/DPI/accessibility baseline;
-- reproducible build and internal package evidence.
+Do not reopen or refactor the accepted `0.0.1-internal` implementation merely for stylistic reasons. Change it only when a `0.1.0` requirement, defect, migration need, security/recovery issue, or clearly justified simplification requires the change.
 
-Not in `0.0.1-internal`:
+Until the user explicitly changes the active milestone or the repository baseline is updated, implement only work required for `0.1.0`.
 
-- broad project-catalog UX;
-- Requirement/Product/Risk/Decision/Milestone/Release features;
+The purpose of `0.1.0` is to make SASD PIMS **practically usable as a local project catalog**.
+
+The user must be able to:
+
+- start PIMS reliably;
+- see existing projects in a useful project list;
+- create a project;
+- view and edit project master data;
+- save changes;
+- close and reopen the application without losing data;
+- identify and select projects clearly;
+- receive understandable validation feedback;
+- use reversible archive/deactivate and reactivation behaviour once the corresponding domain rule is finalized for this milestone;
+- continue to use the proven backup/restore path after the `0.1.0` schema migration;
+- use the core catalog workflow by keyboard and on the required DPI baseline.
+
+`0.1.0` must also prove the first real schema evolution from the accepted `0.0.1-internal` database.
+
+Not in `0.1.0`:
+
+- Requirement management;
+- Product lifecycle/product pipeline;
+- Risk, Decision, Milestone or Release management;
+- status-review/blocker functionality planned for `0.2.0`;
 - dashboards or charts;
-- product pipeline;
-- generic task management;
-- external provider APIs;
+- GitHub/provider APIs;
 - cloud synchronization;
 - plugin framework;
-- installer or automatic updater unless explicitly requested for a focused experiment.
+- generic task management;
+- complex reporting;
+- installer or automatic updater unless explicitly requested for a focused validation task.
 
 ### Milestone boundary rule
 
@@ -97,13 +109,37 @@ Never pull a later milestone feature forward merely because its design already e
 
 If a later feature is technically useful but not necessary for the active milestone, defer it.
 
+### Default autonomy inside the active milestone
+
+When the user authorizes autonomous milestone work, Codex may:
+
+- determine the next open implementation step inside `0.1.0`;
+- implement, build, test and debug it;
+- make small reversible technical decisions that do not change product semantics or approved architecture;
+- add regression tests;
+- perform small local refactorings needed for the current change;
+- commit logically complete changes after their relevant quality gates pass.
+
+Codex must stop and ask only when a decision would materially change:
+
+- product/domain semantics;
+- approved architecture or technology baseline;
+- data-loss/recovery guarantees;
+- security posture;
+- licence obligations;
+- a public/portable exchange contract;
+- supported platform;
+- milestone scope.
+
+Do not transition to `0.2.0` without explicit user approval.
+
 ---
 
 ## 3. Full roadmap — all planned milestones
 
 The following milestones are the approved staged path. They are **scope boundaries**, not permission to implement ahead.
 
-### `0.0.1-internal — Vertical architecture slice`
+### `0.0.1-internal — Vertical architecture slice` — completed
 
 Goal: prove that the approved architecture supports one complete, testable workflow.
 
@@ -225,6 +261,8 @@ After feature freeze, priority moves to:
 - upgradeability.
 
 Do not introduce new planned 1.0 features after the freeze without explicit roadmap change.
+
+After feature freeze, run a deliberate optimization/refactoring loop based on actual measurements and accumulated technical debt before the release-candidate phase. Optimize measured bottlenecks and unnecessarily complex code; do not perform speculative rewrites.
 
 ### `0.9.0 — Release candidate`
 
@@ -461,11 +499,23 @@ Current default data path:
 
 Tests must use isolated temporary paths.
 
-### P1 Project persistence
+### Current `0.1.0` Project persistence
 
-For `0.0.1-internal`, implement only the approved minimal Project persistence model from the database specification.
+Preserve the accepted `0.0.1-internal` database as the migration source and evolve it through real EF Core migrations.
 
-Do not pre-create future tables for Requirements, Products, Risks, Milestones, Decisions, Releases, references or tags.
+For `0.1.0`:
+
+- extend Project only with fields and relations required by the approved project-catalog scope;
+- preserve stable Project identity and Project Key semantics;
+- preserve existing `0.0.1-internal` Project data during migration;
+- test migration from a real `0.0.1-internal` database to the current `0.1.0` schema;
+- verify that migrated data can be edited, saved, closed and reopened;
+- verify that backup/restore still works after the schema change;
+- do not delete/recreate the user database as a substitute for migration.
+
+Do not pre-create future tables for Requirements, Products, Risks, Milestones, Decisions, Releases or external references.
+
+If tags or small controlled reference data are required by the approved `0.1.0` baseline, implement only the minimal normalized model needed for actual catalog use.
 
 ### Backup/restore
 
@@ -488,14 +538,23 @@ Use native WinForms controls first.
 
 Do not add a full UI toolkit, Ribbon framework, docking framework, chart library or WebView merely for visual polish.
 
-For the current vertical slice, the UI is deliberately small:
+For `0.1.0`, build a simple but genuinely usable project catalog with native WinForms controls.
 
-- MainForm;
-- minimal Project editor;
-- clear validation;
-- safe error feedback.
+Minimum practical UI scope:
 
-The repository dashboard screenshot is a **design concept**, not proof of implemented functionality and not a requirement to build the full dashboard in P1.
+- MainForm with useful project list/catalog;
+- clear project selection/opening;
+- create/view/edit Project;
+- explicit Save/Cancel behaviour;
+- understandable validation;
+- safe error feedback;
+- reversible archive/deactivate/reactivate behaviour when the domain rule is finalized;
+- access to the already proven backup/restore path;
+- reliable restart/reopen behaviour.
+
+The repository dashboard screenshot is a **design concept**, not proof of implemented functionality and not a requirement to reproduce the full dashboard in `0.1.0`.
+
+Prioritize usability and clarity over visual sophistication. Do not add Ribbon, charts, complex themes, docking or custom-drawing infrastructure just to make the early release look more elaborate.
 
 ### Accessibility and DPI
 
@@ -517,7 +576,9 @@ Application code should target the `Microsoft.Extensions.Logging` abstraction wh
 
 Do not hard-wire Serilog types into Domain/Application.
 
-The concrete file logging provider remains an implementation decision until explicitly settled.
+The accepted `0.0.1-internal` implementation uses a small custom `ILoggerProvider` for local structured diagnostics.
+
+Keep it unless a concrete defect or requirement justifies replacement. Do not introduce Serilog or another logging framework merely for stylistic preference.
 
 Routine logs must not contain:
 
@@ -528,6 +589,20 @@ Routine logs must not contain:
 - real database contents.
 
 Unexpected/infrastructure errors should be correlatable between safe user-visible messages and technical diagnostics.
+
+---
+
+### Accepted SQLite native dependency decision
+
+The `0.0.1-internal` implementation explicitly pinned the patched native SQLite dependency used by the accepted vertical slice to version `2.1.12`.
+
+Do not change this pin casually. Any update must pass:
+
+- licence/dependency review;
+- vulnerability review;
+- real SQLite integration tests;
+- migration tests;
+- backup/restore and recovery tests.
 
 ---
 
@@ -561,17 +636,132 @@ Use central build/package configuration only when it serves multiple projects an
 
 Do not create speculative build infrastructure.
 
-For the first vertical slice:
+The accepted `0.0.1-internal` evidence selected **self-contained `win-x64`** as the default packaging model for `0.1.0`.
 
-- compare framework-dependent and self-contained `win-x64` publish where practical;
-- document size/runtime prerequisites;
-- choose the later default from evidence;
-- portable ZIP is sufficient for the internal artifact;
-- do not introduce an installer or auto-updater just to complete P1.
+For `0.1.0`:
+
+- keep the self-contained `win-x64` default unless new evidence justifies a change;
+- keep the portable ZIP as the practical early-release artifact;
+- generate and verify SHA-256;
+- keep real databases, logs, backups, `.env` files, tokens and secrets out of artifacts;
+- do not introduce an installer, code-signing workflow or auto-updater merely to complete `0.1.0`.
 
 ---
 
-## 13. Verification rules
+## 13. Development priority: usability before premature optimization
+
+The primary goal of the early milestones is to make PIMS useful quickly while preserving correctness, data integrity, recovery, security and architectural boundaries.
+
+Code must be:
+
+- correct;
+- understandable;
+- maintainable;
+- adequately tested;
+- safe with user data.
+
+Code does **not** need to be maximally optimized during early feature milestones.
+
+Avoid unless there is a measured or clearly demonstrated need:
+
+- micro-optimizations;
+- speculative caching;
+- premature parallelism;
+- complex pooling;
+- generic frameworks for hypothetical future features;
+- large refactorings with no current functional benefit;
+- performance tuning without measurements;
+- replacing simple working code with a theoretically more elegant but substantially more complex design.
+
+Prefer:
+
+- the simplest correct implementation;
+- clear control flow;
+- small cohesive classes/methods;
+- reversible decisions;
+- early practical functionality.
+
+When a potentially useful optimization is discovered but is not necessary for the active milestone:
+
+1. do not implement it automatically;
+2. record it as technical debt/improvement when it is material;
+3. continue toward usable milestone functionality.
+
+A deliberate optimization/refactoring phase is expected after `0.8.0` feature freeze and before `0.9.0`, using real measurements, profiling and accumulated evidence.
+
+Small obvious improvements that reduce defects or complexity without distracting from the milestone may still be made immediately.
+
+---
+
+## 14. Code comments and XML documentation
+
+The source should be understandable to a developer who did not make the original implementation decision.
+
+Use **English identifiers, English technical comments and English XML documentation** in C# source. User-facing UI text remains German according to the product baseline.
+
+### XML documentation
+
+Use `///` XML documentation where it adds durable value, especially for:
+
+- public domain types;
+- public application use cases;
+- public ports/interfaces;
+- public DTOs/result types with non-trivial semantics;
+- backup/restore/export APIs;
+- public methods with important invariants, side effects, conflict semantics or lifecycle rules.
+
+Useful XML documentation should explain:
+
+- purpose;
+- important parameter semantics;
+- return/result semantics;
+- invariants or preconditions;
+- important failure/conflict behaviour;
+- relevant side effects.
+
+Do not add verbose XML comments to trivial private helpers merely to increase comment volume.
+
+### Inline comments
+
+Use `//` comments to explain **why**, not to translate obvious C# syntax.
+
+Comment especially:
+
+- non-obvious domain decisions;
+- state transitions;
+- transaction boundaries;
+- concurrency/revision handling;
+- migration compatibility logic;
+- recovery/rollback steps;
+- atomic file/database replacement;
+- security or integrity checks;
+- platform/framework workarounds;
+- intentionally unusual ordering of operations;
+- places where a simpler-looking implementation is deliberately avoided for correctness.
+
+Good example:
+
+```csharp
+// Increment the revision only after the domain mutation has been accepted.
+// Persistence compares this value to detect stale editors instead of silently
+// overwriting a newer project state.
+revision++;
+```
+
+Avoid comments such as:
+
+```csharp
+// Increment revision.
+revision++;
+```
+
+Comments must stay correct when code changes. Remove or update stale comments during related refactoring.
+
+The goal is **readable, teachable code**, not maximum comment density.
+
+---
+
+## 15. Verification rules
 
 Before claiming a task complete:
 
@@ -605,7 +795,7 @@ For a bug fix, add a regression test when reasonably automatable.
 
 ---
 
-## 14. Architecture tests
+## 16. Architecture tests
 
 Automate dependency rules as soon as the scaffold makes that practical.
 
@@ -622,7 +812,7 @@ If an architecture test fails, do not weaken the test simply to make the build g
 
 ---
 
-## 15. Git workflow and safety
+## 17. Git workflow and safety
 
 Before modifying files:
 
@@ -647,7 +837,10 @@ Rules:
 - do not rewrite shared history;
 - do not force-push;
 - do not reset/discard unrelated user changes;
-- do not commit unless the user explicitly asks you to commit.
+- when the user has authorized autonomous milestone work, commit each logically complete change after its relevant quality gates pass;
+- outside such an authorization, do not commit unless the user explicitly asks;
+- do not push unless the user has explicitly authorized pushing for the current task or milestone;
+- never force-push or rewrite shared history.
 
 Suggested commit families:
 
@@ -665,7 +858,7 @@ Suggested commit families:
 
 ---
 
-## 16. Change discipline
+## 18. Change discipline
 
 Do not edit approved requirements/architecture merely to make implementation easier.
 
@@ -690,7 +883,7 @@ Examples of strategic questions:
 
 ---
 
-## 17. Working method for Codex
+## 19. Working method for Codex
 
 For each task:
 
@@ -708,13 +901,13 @@ For each task:
    - tests/builds actually run;
    - failures/deviations;
    - any architectural question requiring escalation;
-10. stop at the requested task boundary.
+10. stop at the requested task boundary, unless the user has explicitly authorized autonomous work for the whole active milestone.
 
-Do not continue into the next roadmap item automatically.
+During an autonomous milestone run, continue from one verified, committed step to the next **within the same active milestone**. Never continue into the next milestone automatically.
 
 ---
 
-## 18. Definition of Done for a normal implementation task
+## 20. Definition of Done for a normal implementation task
 
 As applicable:
 
@@ -731,11 +924,11 @@ As applicable:
 - [ ] `git diff --check` clean;
 - [ ] final diff reviewed for unrelated changes;
 - [ ] verification limitations explicitly reported;
-- [ ] no commit made unless explicitly requested.
+- [ ] commit behaviour followed the current user authorization (manual task vs. autonomous milestone run).
 
 ---
 
-## 19. Stop rule against overengineering
+## 21. Stop rule against overengineering
 
 When the approved documents determine the next step sufficiently:
 
@@ -751,7 +944,7 @@ If a small working experiment can resolve a technical uncertainty more reliably 
 
 ---
 
-## 20. Milestone transition rule
+## 22. Milestone transition rule
 
 When a milestone is accepted:
 
