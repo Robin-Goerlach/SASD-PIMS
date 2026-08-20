@@ -6,6 +6,21 @@ The project intends to follow [Semantic Versioning](https://semver.org/) once re
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-20
+
+### Added
+- Independent controlled project phase and activity state.
+- Derived review freshness, 14-day target-date indication and concrete attention reasons.
+- Project blocker creation, resolution and retained resolution history.
+- German steering workspace, attention filter and local F1 glossary.
+- Additive SQLite migration from the accepted 0.1 schema.
+
+### Changed
+- Current database schema is `202608200002_ProjectSteering`.
+
+### Security
+- Pre-migration backup, staged restore and integrity verification cover the expanded schema.
+
 ## [0.1.0] - 2026-08-20
 
 ### Added

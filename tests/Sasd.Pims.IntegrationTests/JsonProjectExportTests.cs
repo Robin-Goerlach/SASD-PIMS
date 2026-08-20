@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Sasd.Pims.Application.Projects;
+using Sasd.Pims.Domain.Projects;
 using Sasd.Pims.Infrastructure.Export;
 using Xunit;
 
@@ -81,6 +82,11 @@ public sealed class JsonProjectExportTests
             "INTERNAL",
             "Team",
             ["desktop"],
+            ProjectPhase.Execution,
+            ActivityState.Active,
+            new DateOnly(2026, 9, 30),
+            ExportedAt.AddDays(-2),
+            ExportedAt.AddDays(5),
             true,
             ExportedAt.AddDays(-1),
             ExportedAt.AddHours(-1),

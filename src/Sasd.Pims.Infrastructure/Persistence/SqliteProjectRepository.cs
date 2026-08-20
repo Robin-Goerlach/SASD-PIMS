@@ -95,6 +95,11 @@ public sealed class SqliteProjectRepository(IDbContextFactory<PimsDbContext> con
             ProjectType = project.ProjectType,
             ProjectArea = project.ProjectArea,
             Responsibility = project.Responsibility,
+            Phase = project.Phase,
+            ActivityState = project.ActivityState,
+            TargetDate = project.TargetDate,
+            LastReviewedAtUtc = project.LastReviewedAtUtc,
+            NextReviewDueAtUtc = project.NextReviewDueAtUtc,
             IsArchived = project.IsArchived,
             CreatedAtUtc = project.CreatedAtUtc,
             ModifiedAtUtc = project.ModifiedAtUtc,
@@ -111,6 +116,11 @@ public sealed class SqliteProjectRepository(IDbContextFactory<PimsDbContext> con
         record.ProjectType = project.ProjectType;
         record.ProjectArea = project.ProjectArea;
         record.Responsibility = project.Responsibility;
+        record.Phase = project.Phase;
+        record.ActivityState = project.ActivityState;
+        record.TargetDate = project.TargetDate;
+        record.LastReviewedAtUtc = project.LastReviewedAtUtc;
+        record.NextReviewDueAtUtc = project.NextReviewDueAtUtc;
         record.IsArchived = project.IsArchived;
         record.ModifiedAtUtc = project.ModifiedAtUtc;
         record.Revision = project.Revision;
@@ -128,6 +138,11 @@ public sealed class SqliteProjectRepository(IDbContextFactory<PimsDbContext> con
             record.ProjectArea,
             record.Responsibility,
             record.Tags.Select(tag => tag.Value),
+            record.Phase,
+            record.ActivityState,
+            record.TargetDate,
+            record.LastReviewedAtUtc,
+            record.NextReviewDueAtUtc,
             record.IsArchived,
             record.CreatedAtUtc,
             record.ModifiedAtUtc,

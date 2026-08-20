@@ -71,3 +71,4 @@ release-artifacts/
 # Local tooling
 *.cache
 *.tmp
+.codex/

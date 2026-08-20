@@ -315,7 +315,7 @@ The database part of `0.0.1-internal` is accepted only when:
 
 Defer until the corresponding roadmap stage:
 
-- requirements, blockers and references schema;
+- requirements and references schema;
 - audit-history physical model;
 - FTS5;
 - product/release/milestone schema;
@@ -323,5 +323,19 @@ Defer until the corresponding roadmap stage:
 - multi-user locks/permissions;
 - remote/provider metadata;
 - plugin-extensible persistence.
+
+## 19. Schema evolution for 0.2.0
+
+Migration `202608200002_ProjectSteering` extends `Projects` additively with `Phase`,
+`ActivityState`, `TargetDate`, `LastReviewedAtUtc` and `NextReviewDueAtUtc`. Existing 0.1 rows
+receive the conservative defaults `Idea` and `NotStarted`; nullable scheduling facts remain unset.
+
+`ProjectBlockers` stores `Id`, `ProjectId`, `Summary`, optional `Details`, `CreatedAtUtc`, optional
+`ResolvedAtUtc` and optional `ResolutionNote`. Resolution updates an open row conditionally and
+never deletes its history. The foreign key uses the established Project identity. The normal UI
+continues to provide no Project hard-delete operation.
+
+Review freshness, target-date indication and NeedsAttention are derived from persisted facts and
+current time. They are deliberately not stored as authoritative snapshots.
 
 That deferral is intentional scope control.

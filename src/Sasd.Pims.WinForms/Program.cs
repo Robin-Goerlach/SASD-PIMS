@@ -54,14 +54,20 @@ internal static class Program
                 .GetAwaiter()
                 .GetResult();
             var repository = new SqliteProjectRepository(contextFactory);
+            var blockerRepository = new SqliteProjectBlockerRepository(contextFactory);
             var failureHandler = new OperationFailureHandler(
                 loggerFactory.CreateLogger<OperationFailureHandler>());
             var mainForm = new MainForm(
                 new CreateProject(repository, TimeProvider.System, failureHandler),
                 new LoadProject(repository, failureHandler),
-                new ListProjects(repository, failureHandler),
+                new ListProjects(repository, blockerRepository, TimeProvider.System, failureHandler),
                 new UpdateProject(repository, TimeProvider.System, failureHandler),
                 new SetProjectArchiveState(repository, TimeProvider.System, failureHandler),
+                new UpdateProjectSteering(repository, TimeProvider.System, failureHandler),
+                new MarkProjectReviewed(repository, TimeProvider.System, failureHandler),
+                new ListProjectBlockers(blockerRepository, failureHandler),
+                new AddProjectBlocker(repository, blockerRepository, TimeProvider.System, failureHandler),
+                new ResolveProjectBlocker(blockerRepository, TimeProvider.System, failureHandler),
                 new ExportProject(
                     repository,
                     new JsonProjectExportWriter(),
