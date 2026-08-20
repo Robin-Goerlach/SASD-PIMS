@@ -142,6 +142,10 @@ public sealed class MainForm : Form
         var glossary = new ToolStripMenuItem("&Hilfe und Glossar (F1)");
         glossary.Click += (_, _) => { using var help = new HelpForm(); help.ShowDialog(this); };
         helpMenu.DropDownItems.Add(glossary);
+        var about = new ToolStripMenuItem("&Über SASD PIMS");
+        about.Click += (_, _) => MessageBox.Show(this, $"SASD PIMS {_version}\nLokaler Projektkatalog",
+            "Über SASD PIMS", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        helpMenu.DropDownItems.Add(about);
         menu.Items.Add(helpMenu);
         Controls.Add(content);
         Controls.Add(statusStrip);
@@ -304,8 +308,27 @@ public sealed class MainForm : Form
     {
         var attention = summary.NeedsAttention ? " ⚠ Handlungsbedarf" : string.Empty;
         var archive = summary.IsArchived ? " [Archiviert]" : string.Empty;
-        return $"{summary.Key} — {summary.Name} · {German(summary.Phase)} / {German(summary.ActivityState)}{attention}{archive}";
+        return $"{summary.Key} — {summary.Name} · {German(summary.Phase)} / {German(summary.ActivityState)} · " +
+            $"{German(summary.ReviewFreshness)} · {German(summary.DueDateIndication)}{attention}{archive}";
     }
+
+    private static string German(Sasd.Pims.Domain.Projects.ReviewFreshness value) => value switch
+    {
+        Sasd.Pims.Domain.Projects.ReviewFreshness.NotScheduled => "Review nicht geplant",
+        Sasd.Pims.Domain.Projects.ReviewFreshness.NotReviewed => "Noch nicht geprüft",
+        Sasd.Pims.Domain.Projects.ReviewFreshness.Current => "Review aktuell",
+        Sasd.Pims.Domain.Projects.ReviewFreshness.DueToday => "Review heute fällig",
+        _ => "Review überfällig",
+    };
+
+    private static string German(Sasd.Pims.Domain.Projects.DueDateIndication value) => value switch
+    {
+        Sasd.Pims.Domain.Projects.DueDateIndication.OnTrack => "Termin im Plan",
+        Sasd.Pims.Domain.Projects.DueDateIndication.DueSoon => "Termin bald fällig",
+        Sasd.Pims.Domain.Projects.DueDateIndication.DueToday => "Termin heute fällig",
+        Sasd.Pims.Domain.Projects.DueDateIndication.Overdue => "Termin überfällig",
+        _ => "Kein Terminsignal",
+    };
 
     private async void ExportClicked(object? sender, EventArgs e)
     {

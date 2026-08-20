@@ -34,6 +34,11 @@ public sealed class ProjectSteeringForm : Form
         SetOptionalDate(target, project.TargetDate);
         SetOptionalDate(nextReview, project.NextReviewDueAtUtc is null
             ? null : DateOnly.FromDateTime(project.NextReviewDueAtUtc.Value.LocalDateTime));
+        var tips = new ToolTip();
+        tips.SetToolTip(phase, "Fachliche Lebenszyklusphase; unabhängig von Aktivität und Archivierung.");
+        tips.SetToolTip(activity, "Aktueller Arbeitszustand; ändert Phase und Archivierung nicht automatisch.");
+        tips.SetToolTip(target, "Innerhalb von 14 Kalendertagen wird der Termin als bald fällig angezeigt.");
+        tips.SetToolTip(nextReview, "Aus diesem Datum und der aktuellen Zeit wird die Review-Aktualität berechnet.");
 
         var grid = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(12), ColumnCount = 2, RowCount = 6 };
         AddRow(grid, 0, "&Phase", phase);
