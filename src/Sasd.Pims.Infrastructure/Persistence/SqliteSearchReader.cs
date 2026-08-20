@@ -28,6 +28,9 @@ public sealed class SqliteSearchReader(IDbContextFactory<PimsDbContext> contextF
                     (item.Benefit != null && item.Benefit.Contains(text)) ||
                     (item.Responsibility != null && item.Responsibility.Contains(text)) ||
                     item.Tags.Any(tag => tag.Value.Contains(text)));
+            source = query.Sort == SearchSort.Title
+                ? source.OrderBy(item => item.Name).ThenBy(item => item.Key)
+                : source.OrderBy(item => item.Key).ThenBy(item => item.Name);
             total += await source.CountAsync(cancellationToken).ConfigureAwait(false);
             rows.AddRange(await source.Take(query.Offset + query.Limit)
                 .Select(item => new SearchRow(SearchObjectType.Project, item.Id, item.Id, item.Key,
@@ -47,6 +50,9 @@ public sealed class SqliteSearchReader(IDbContextFactory<PimsDbContext> contextF
                     (item.Description != null && item.Description.Contains(text)) ||
                     (item.Rationale != null && item.Rationale.Contains(text)) ||
                     (item.SourceSummary != null && item.SourceSummary.Contains(text)));
+            source = query.Sort == SearchSort.Title
+                ? source.OrderBy(item => item.Title).ThenBy(item => item.Project.Key)
+                : source.OrderBy(item => item.Project.Key).ThenBy(item => item.Key);
             total += await source.CountAsync(cancellationToken).ConfigureAwait(false);
             rows.AddRange(await source.Take(query.Offset + query.Limit)
                 .Select(item => new SearchRow(SearchObjectType.Requirement, item.Id, item.ProjectId,
@@ -62,6 +68,9 @@ public sealed class SqliteSearchReader(IDbContextFactory<PimsDbContext> contextF
                 source = source.Where(item => item.Summary.Contains(text) ||
                     (item.Details != null && item.Details.Contains(text)) ||
                     (item.ResolutionNote != null && item.ResolutionNote.Contains(text)));
+            source = query.Sort == SearchSort.Title
+                ? source.OrderBy(item => item.Summary).ThenBy(item => item.Project.Key)
+                : source.OrderBy(item => item.Project.Key).ThenBy(item => item.Summary);
             total += await source.CountAsync(cancellationToken).ConfigureAwait(false);
             rows.AddRange(await source.Take(query.Offset + query.Limit)
                 .Select(item => new SearchRow(SearchObjectType.Blocker, item.Id, item.ProjectId,
@@ -75,6 +84,9 @@ public sealed class SqliteSearchReader(IDbContextFactory<PimsDbContext> contextF
             if (query.ProjectId is not null) source = source.Where(item => item.ProjectId == query.ProjectId);
             if (query.ReferenceType is not null) source = source.Where(item => item.Type == query.ReferenceType);
             if (text is not null) source = source.Where(item => item.Title.Contains(text) || item.Target.Contains(text));
+            source = query.Sort == SearchSort.Title
+                ? source.OrderBy(item => item.Title).ThenBy(item => item.Project.Key)
+                : source.OrderBy(item => item.Project.Key).ThenBy(item => item.Title);
             total += await source.CountAsync(cancellationToken).ConfigureAwait(false);
             rows.AddRange(await source.Take(query.Offset + query.Limit)
                 .Select(item => new SearchRow(SearchObjectType.ExternalReference, item.Id,
