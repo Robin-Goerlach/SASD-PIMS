@@ -339,3 +339,20 @@ Review freshness, target-date indication and NeedsAttention are derived from per
 current time. They are deliberately not stored as authoritative snapshots.
 
 That deferral is intentional scope control.
+
+## 20. Schema evolution for 0.3.0
+
+Migration `202608200003_RequirementsAndTypedReferences` is additive to the released 0.2 schema.
+It creates `Requirements`, `AcceptanceCriteria` and `ExternalReferences` without modifying existing
+Project, tag, steering or blocker rows.
+
+`Requirements` has a required Project foreign key, immutable GUID and project-local `Key`, controlled
+priority/decision/source codes, optional source facts/reference and an explicit concurrency revision.
+`(ProjectId, Key)` is unique. `AcceptanceCriteria` preserves order through the unique
+`(RequirementId, Sequence)` index and may point to a verification reference. `ExternalReferences`
+always has ProjectId and may additionally identify a Requirement in that same Project. Application
+validation enforces the cross-row same-Project invariant before persistence; relational foreign keys
+protect the referenced identities.
+
+No reachability, health, provider metadata, attachment content or task state is stored. Existing 0.2
+databases receive a verified pre-migration backup and remain editable after migration and reopen.
