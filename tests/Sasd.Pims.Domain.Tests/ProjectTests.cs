@@ -86,4 +86,57 @@ public sealed class ProjectTests
         Assert.Equal(modifiedAt, project.ModifiedAtUtc);
         Assert.Equal(2, project.Revision);
     }
+
+    [Fact]
+    public void CompleteMasterDataIsNormalisedAndEditableWithoutChangingIdentity()
+    {
+        var project = Project.Create(Guid.NewGuid(), " catalog-1 ", " Catalog ", " Short ",
+            " Goal ", " Benefit ", " software-project ", " internal-tools ", " Team PIMS ",
+            [" desktop ", "Desktop", " local-first "], CreatedAt);
+        var id = project.Id;
+
+        project.UpdateDetails("Renamed", "Updated", "New goal", "New benefit", "documentation",
+            "internal-tools", "Team Docs", ["docs"], CreatedAt.AddMinutes(1));
+
+        Assert.Equal(id, project.Id);
+        Assert.Equal("CATALOG-1", project.Key.Value);
+        Assert.Equal("DOCUMENTATION", project.ProjectType);
+        Assert.Equal("INTERNAL-TOOLS", project.ProjectArea);
+        Assert.Equal("Team Docs", project.Responsibility);
+        Assert.Equal(["docs"], project.Tags);
+        Assert.Equal(2, project.Revision);
+    }
+
+    [Fact]
+    public void ArchiveAndReactivateAreReversibleAndAdvanceRevision()
+    {
+        var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, CreatedAt);
+        project.Archive(CreatedAt.AddMinutes(1));
+        Assert.True(project.IsArchived);
+        Assert.Equal(2, project.Revision);
+
+        project.Reactivate(CreatedAt.AddMinutes(2));
+        Assert.False(project.IsArchived);
+        Assert.Equal(3, project.Revision);
+    }
+
+    [Theory]
+    [InlineData("-SOFTWARE")]
+    [InlineData("SOFTWARE-")]
+    [InlineData("SOFTWARE--PROJECT")]
+    [InlineData("SOFTWARE PROJECT")]
+    public void InvalidClassificationCodeIsRejected(string code)
+    {
+        var exception = Assert.Throws<DomainValidationException>(() => Project.Create(Guid.NewGuid(),
+            "DEMO", "Demo", null, null, null, code, null, null, [], CreatedAt));
+        Assert.Contains(exception.Errors, error => error.Code == "ProjectClassificationInvalid");
+    }
+
+    [Fact]
+    public void InvalidTagsAreRejected()
+    {
+        var exception = Assert.Throws<DomainValidationException>(() => Project.Create(Guid.NewGuid(),
+            "DEMO", "Demo", null, null, null, null, null, null, [" "], CreatedAt));
+        Assert.Contains(exception.Errors, error => error.Code == "ProjectTagInvalid");
+    }
 }

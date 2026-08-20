@@ -95,6 +95,19 @@ default package for `0.1.0`. The measured P1 publish was 125.10 MiB self-contain
 distribution because it removes the separate .NET Desktop Runtime prerequisite. The
 framework-dependent publish remains a supported evaluation output, not the default artifact.
 
+### Resolved 0.1 implementation decisions
+
+`OD-01-001` is resolved for `0.1.0` as a separate reversible archive flag. Archiving removes a
+project from the normal active catalog without deleting its master data; archived projects remain
+findable and can be reactivated. The normal UI exposes no physical project deletion. Broader phase,
+pause and discontinuation semantics remain deferred to the status-focused `0.2.0` milestone.
+
+`OD-01-002` is resolved without seeding an unproven organisation-wide vocabulary. `0.1.0` stores
+optional, language-neutral project-type and project-area codes and validates their stable technical
+syntax. Users can classify and filter projects by those codes; controlled reference-data catalogs and
+their administration remain deferred until real catalog usage supplies the vocabulary. Simple tags are
+stored as a normalised relation rather than delimiter-separated project data.
+
 ## 6. Approved first implementation scope
 
 `0.0.1-internal` must prove:
