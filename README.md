@@ -1,8 +1,8 @@
 # SASD PIMS
 
-> **Status:** Ready-to-code baseline / pre-implementation.  
-> Requirements, technical specification, architecture baseline, implementation specifications and roadmap are versioned in this repository.  
-> **No production-ready application or installable release is available yet.**
+> **Status:** `0.0.1-internal` vertical-slice implementation complete on the local development branch.
+> The implemented PoC proves minimal Project creation, SQLite persistence/reopen, export, diagnostics and verified recovery.
+> **This is an internal architecture proof, not a supported production release.**
 
 **SASD PIMS (Project Information Management System)** is a planned local-first Windows desktop application for maintaining the information that describes and governs SASD software projects. It is intentionally not a general task-management platform or Jira replacement.
 
@@ -176,36 +176,32 @@ The project directories are placeholders until the vertical slice is scaffolded.
 
 ## Installation
 
-### Current status
+### Developer prerequisites
 
-There is **no installable release yet**.
-
-Until the first vertical slice and release artifact exist, any installation instructions claiming a finished installer or executable would be misleading.
-
-### Planned developer prerequisites
-
-Once the solution is scaffolded, the expected development prerequisites are:
+To build the current vertical slice:
 
 - Windows 11 x64;
 - .NET 10 SDK;
 - Git;
 - an IDE/editor with C# and Windows Forms support.
 
-Expected build commands after the solution exists:
+Build and test from the repository root:
 
 ```powershell
-dotnet restore
-dotnet build
-dotnet test
+dotnet restore Sasd.Pims.slnx
+dotnet build Sasd.Pims.slnx -c Release
+dotnet test Sasd.Pims.slnx -c Release
 ```
 
-These commands are part of the intended repository contract; they are not evidence that the solution already exists.
+Create the evaluated internal self-contained ZIP (generated files remain under ignored `artifacts/`):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-0.0.1-internal.ps1
+```
 
 ## Usage
 
-No end-user workflow is available yet.
-
-The first executable vertical slice (`0.0.1-internal`) is intended to prove one complete path:
+The executable vertical slice (`0.0.1-internal`) implements this deliberately narrow path:
 
 1. start the application;
 2. create a project;
@@ -217,7 +213,9 @@ The first executable vertical slice (`0.0.1-internal`) is intended to prove one 
 8. exercise backup and restore;
 9. verify logging and failure handling.
 
-Version `0.1.0` will then turn that proof into a practically usable local project catalog.
+Runtime data is stored under `%LOCALAPPDATA%\SASD\PIMS`; user-selected exports and backups
+are written to the selected path. Version `0.1.0` will turn this proof into a practically
+usable local project catalog; that milestone has not started.
 
 ## Privacy and security
 
@@ -275,7 +273,9 @@ See [`LICENSE`](LICENSE) for the full licence text. Third-party dependencies rem
 
 ## Project status
 
-This repository is in the preparation phase. Documentation can be mature while implementation is still absent. Issues, screenshots and release notes must therefore distinguish between:
+The `0.0.1-internal` implementation and local release evidence are complete. No public artifact
+has been pushed or released. Milestone acceptance and transition to `0.1.0` remain explicit
+maintainer decisions. Issues, screenshots and release notes distinguish between:
 
 - planned;
 - implemented;
