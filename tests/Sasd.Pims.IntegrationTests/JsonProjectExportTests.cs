@@ -33,6 +33,10 @@ public sealed class JsonProjectExportTests
             Assert.Equal(JsonProjectExportWriter.SchemaVersion, rootElement.GetProperty("schemaVersion").GetString());
             Assert.Equal(project.Id, rootElement.GetProperty("project").GetProperty("id").GetGuid());
             Assert.Equal(project.Key, rootElement.GetProperty("project").GetProperty("key").GetString());
+            Assert.Equal("Goal", rootElement.GetProperty("project").GetProperty("goal").GetString());
+            Assert.Equal("SOFTWARE", rootElement.GetProperty("project").GetProperty("projectType").GetString());
+            Assert.True(rootElement.GetProperty("project").GetProperty("isArchived").GetBoolean());
+            Assert.Equal("desktop", rootElement.GetProperty("project").GetProperty("tags")[0].GetString());
             Assert.Equal(ExportedAt, rootElement.GetProperty("exportedAtUtc").GetDateTimeOffset());
         }
         finally
@@ -71,13 +75,13 @@ public sealed class JsonProjectExportTests
             "EXPORT-DEMO",
             "Export demo",
             "Synthetic",
-            null,
-            null,
-            null,
-            null,
-            null,
-            [],
-            false,
+            "Goal",
+            "Benefit",
+            "SOFTWARE",
+            "INTERNAL",
+            "Team",
+            ["desktop"],
+            true,
             ExportedAt.AddDays(-1),
             ExportedAt.AddHours(-1),
             2);

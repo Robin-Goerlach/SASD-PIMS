@@ -6,7 +6,7 @@ namespace Sasd.Pims.Infrastructure.Export;
 
 public sealed class JsonProjectExportWriter : IProjectExportWriter
 {
-    public const string SchemaVersion = "1.0-internal";
+    public const string SchemaVersion = "1.1-internal";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -36,6 +36,13 @@ public sealed class JsonProjectExportWriter : IProjectExportWriter
                 project.Key,
                 project.Name,
                 project.ShortDescription,
+                project.Goal,
+                project.Benefit,
+                project.ProjectType,
+                project.ProjectArea,
+                project.Responsibility,
+                project.Tags,
+                project.IsArchived,
                 project.CreatedAtUtc,
                 project.ModifiedAtUtc,
                 project.Revision));
@@ -78,6 +85,13 @@ public sealed class JsonProjectExportWriter : IProjectExportWriter
         string Key,
         string Name,
         string? ShortDescription,
+        string? Goal,
+        string? Benefit,
+        string? ProjectType,
+        string? ProjectArea,
+        string? Responsibility,
+        IReadOnlyList<string> Tags,
+        bool IsArchived,
         DateTimeOffset CreatedAtUtc,
         DateTimeOffset ModifiedAtUtc,
         int Revision);
