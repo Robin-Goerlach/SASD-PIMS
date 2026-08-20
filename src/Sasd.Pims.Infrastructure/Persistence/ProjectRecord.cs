@@ -1,5 +1,7 @@
 namespace Sasd.Pims.Infrastructure.Persistence;
 
+using Sasd.Pims.Domain.Projects;
+
 internal sealed class ProjectRecord
 {
     public Guid Id { get; set; }
@@ -20,6 +22,16 @@ internal sealed class ProjectRecord
 
     public string? Responsibility { get; set; }
 
+    public ProjectPhase Phase { get; set; }
+
+    public ActivityState ActivityState { get; set; }
+
+    public DateOnly? TargetDate { get; set; }
+
+    public DateTimeOffset? LastReviewedAtUtc { get; set; }
+
+    public DateTimeOffset? NextReviewDueAtUtc { get; set; }
+
     public bool IsArchived { get; set; }
 
     public DateTimeOffset CreatedAtUtc { get; set; }
@@ -29,4 +41,6 @@ internal sealed class ProjectRecord
     public int Revision { get; set; }
 
     public List<ProjectTagRecord> Tags { get; set; } = [];
+
+    public List<ProjectBlockerRecord> Blockers { get; set; } = [];
 }

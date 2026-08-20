@@ -21,6 +21,7 @@ public sealed class SqliteProjectPersistenceTests
 
         Assert.Contains("202608190001_InitialProject", appliedMigrations);
         Assert.Contains("202608200001_ProjectCatalog", appliedMigrations);
+        Assert.Contains("202608200002_ProjectSteering", appliedMigrations);
         Assert.True(File.Exists(database.DatabasePath));
     }
 
@@ -63,6 +64,90 @@ public sealed class SqliteProjectPersistenceTests
         Assert.Equal("Goal", loaded?.Goal);
         Assert.Equal("SOFTWARE", loaded?.ProjectType);
         Assert.Equal(["desktop", "local"], loaded?.Tags);
+    }
+
+    [Fact]
+    public async Task SteeringAndBlockerResolutionSurviveCompleteReconstruction()
+    {
+        await using var database = await SqliteTestDatabase.CreateAsync(TestContext.Current.CancellationToken);
+        var project = Project.Create(Guid.NewGuid(), "STEERING", "Steering", null, Now);
+        project.UpdateSteering(ProjectPhase.Execution, ActivityState.Paused, new DateOnly(2026, 9, 15),
+            Now.AddDays(-7), Now.AddDays(7), Now.AddMinutes(1));
+        var projects = new SqliteProjectRepository(database.Factory);
+        var blockers = new SqliteProjectBlockerRepository(database.Factory);
+        await projects.AddAsync(project, TestContext.Current.CancellationToken);
+        var blocker = ProjectBlocker.Create(Guid.NewGuid(), project.Id, "External decision", "Waiting",
+            Now.AddMinutes(2));
+        await blockers.AddAsync(blocker, TestContext.Current.CancellationToken);
+        blocker.Resolve(Now.AddMinutes(3), "Approved");
+        Assert.True(await blockers.ResolveAsync(blocker, TestContext.Current.CancellationToken));
+
+        var reopenedFactory = new PimsDbContextFactory(database.DatabasePath, pooling: false);
+        var loaded = await new SqliteProjectRepository(reopenedFactory).GetByIdAsync(project.Id,
+            TestContext.Current.CancellationToken);
+        var history = await new SqliteProjectBlockerRepository(reopenedFactory).ListByProjectAsync(project.Id,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(ProjectPhase.Execution, loaded?.Phase);
+        Assert.Equal(ActivityState.Paused, loaded?.ActivityState);
+        Assert.Equal(new DateOnly(2026, 9, 15), loaded?.TargetDate);
+        Assert.Equal("Approved", Assert.Single(history).ResolutionNote);
+    }
+
+    [Fact]
+    public async Task Version010DatabaseMigratesToSteeringWithoutDataLoss()
+    {
+        await using var database = await SqliteTestDatabase.CreateUnmigratedAsync();
+        var existingId = Guid.NewGuid();
+        await using (var context = database.Factory.CreateDbContext())
+        {
+            // Build the accepted 0.1 physical schema explicitly so the test cannot accidentally use 0.2 metadata.
+            await context.Database.ExecuteSqlRawAsync("""
+                CREATE TABLE "__EFMigrationsHistory" (
+                    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+                    "ProductVersion" TEXT NOT NULL
+                );
+                INSERT INTO "__EFMigrationsHistory" VALUES ('202608190001_InitialProject', '10.0.10');
+                INSERT INTO "__EFMigrationsHistory" VALUES ('202608200001_ProjectCatalog', '10.0.10');
+                CREATE TABLE "Projects" (
+                    "Id" TEXT NOT NULL CONSTRAINT "PK_Projects" PRIMARY KEY,
+                    "Key" TEXT NOT NULL, "Name" TEXT NOT NULL, "ShortDescription" TEXT NULL,
+                    "CreatedAtUtc" TEXT NOT NULL, "ModifiedAtUtc" TEXT NOT NULL, "Revision" INTEGER NOT NULL,
+                    "Benefit" TEXT NULL, "Goal" TEXT NULL, "IsArchived" INTEGER NOT NULL DEFAULT 0,
+                    "ProjectArea" TEXT NULL, "ProjectType" TEXT NULL, "Responsibility" TEXT NULL
+                );
+                CREATE UNIQUE INDEX "IX_Projects_Key" ON "Projects" ("Key");
+                CREATE TABLE "ProjectTags" (
+                    "ProjectId" TEXT NOT NULL, "Value" TEXT COLLATE NOCASE NOT NULL,
+                    CONSTRAINT "PK_ProjectTags" PRIMARY KEY ("ProjectId", "Value"),
+                    CONSTRAINT "FK_ProjectTags_Projects_ProjectId" FOREIGN KEY ("ProjectId")
+                        REFERENCES "Projects" ("Id") ON DELETE CASCADE
+                );
+                """, TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO Projects (Id, Key, Name, ShortDescription, Goal, Benefit, ProjectType,
+                    ProjectArea, Responsibility, IsArchived, CreatedAtUtc, ModifiedAtUtc, Revision)
+                VALUES ({existingId}, {"V010"}, {"Existing 0.1"}, {"Preserve"}, {"Goal"}, {"Benefit"},
+                    {"SOFTWARE"}, {"INTERNAL"}, {"Team"}, {false}, {Now}, {Now}, {1})
+                """, TestContext.Current.CancellationToken);
+        }
+
+        await new DatabaseMigrator(database.Factory).MigrateAsync(
+            Path.Combine(database.RootPath, "migration-backups"), "0.2.0", TestContext.Current.CancellationToken);
+        var projects = new SqliteProjectRepository(database.Factory);
+        var existing = await projects.GetByIdAsync(existingId, TestContext.Current.CancellationToken);
+        var added = Project.Create(Guid.NewGuid(), "V020", "New 0.2", null, Now.AddMinutes(1));
+        added.UpdateSteering(ProjectPhase.Preparation, ActivityState.Active, null, null, null, Now.AddMinutes(2));
+        Assert.Equal(ProjectWriteResult.Saved,
+            await projects.AddAsync(added, TestContext.Current.CancellationToken));
+
+        var reopened = new SqliteProjectRepository(new PimsDbContextFactory(database.DatabasePath, pooling: false));
+        Assert.Equal("Preserve", existing?.ShortDescription);
+        Assert.Equal(ProjectPhase.Idea, existing?.Phase);
+        Assert.Equal(ActivityState.NotStarted, existing?.ActivityState);
+        Assert.Equal(ProjectPhase.Preparation, (await reopened.GetByIdAsync(added.Id,
+            TestContext.Current.CancellationToken))?.Phase);
+        Assert.Single(Directory.GetFiles(Path.Combine(database.RootPath, "migration-backups"), "*.zip"));
     }
 
     [Fact]
