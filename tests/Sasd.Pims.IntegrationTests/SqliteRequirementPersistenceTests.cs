@@ -6,6 +6,8 @@ using Sasd.Pims.Application.Requirements;
 using Sasd.Pims.Domain.Projects;
 using Sasd.Pims.Domain.Requirements;
 using Sasd.Pims.Infrastructure.Persistence;
+using Sasd.Pims.Application.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Sasd.Pims.IntegrationTests;
@@ -142,6 +144,60 @@ public sealed class SqliteRequirementPersistenceTests
             ExternalReferenceType.WebUrl, "Stale", "https://example.test/stale"), 1, TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task ApplicationRejectsCrossProjectOwnershipSourceAndVerificationReferences()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        var projects = new SqliteProjectRepository(database.Factory);
+        var first = Project.Create(Guid.NewGuid(), "OWNER-A", "A", null, Now);
+        var second = Project.Create(Guid.NewGuid(), "OWNER-B", "B", null, Now);
+        await projects.AddAsync(first, TestContext.Current.CancellationToken);
+        await projects.AddAsync(second, TestContext.Current.CancellationToken);
+        var requirementRepository = new SqliteRequirementRepository(database.Factory);
+        var referenceRepository = new SqliteExternalReferenceRepository(database.Factory);
+        var foreignReference = ExternalReference.Create(Guid.NewGuid(), second.Id, null,
+            ExternalReferenceType.WebUrl, "Foreign", "https://example.test/foreign");
+        await referenceRepository.AddAsync(foreignReference, TestContext.Current.CancellationToken);
+        var failures = new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance);
+        var create = new CreateRequirement(projects, requirementRepository, referenceRepository, failures);
+        var command = new SaveRequirementCommand("Cross project", null, null, RequirementPriority.Must,
+            RequirementDecisionStatus.Proposed, null, RequirementSourceType.External, null, null,
+            foreignReference.Id, [new(null, "Criterion", foreignReference.Id)]);
+        var sourceResult = await create.ExecuteAsync(first.Id, command, TestContext.Current.CancellationToken);
+        Assert.Equal(ProjectOperationStatus.ValidationFailed, sourceResult.Status);
+        Assert.Contains(sourceResult.Errors, error => error.Code == "CrossProjectReference");
+
+        var secondRequirement = CreateRequirement(second.Id, "REQ-001", "Second project");
+        await requirementRepository.AddAsync(secondRequirement, TestContext.Current.CancellationToken);
+        var saveReference = new SaveExternalReference(projects, requirementRepository, referenceRepository, failures);
+        var ownershipResult = await saveReference.CreateAsync(first.Id, secondRequirement.Id,
+            new(ExternalReferenceType.WebUrl, "Wrong owner", "https://example.test"), TestContext.Current.CancellationToken);
+        Assert.Equal(ProjectOperationStatus.ValidationFailed, ownershipResult.Status);
+        Assert.Contains(ownershipResult.Errors, error => error.Code == "ReferenceOwnershipMismatch");
+    }
+
+    [Fact]
+    public async Task MissingLocalTargetIsReportedWithoutOpeningOrDeletingReference()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        var project = Project.Create(Guid.NewGuid(), "MISSING-REF", "Missing target", null, Now);
+        await new SqliteProjectRepository(database.Factory).AddAsync(project, TestContext.Current.CancellationToken);
+        var references = new SqliteExternalReferenceRepository(database.Factory);
+        var target = Path.Combine(database.RootPath, "does-not-exist.txt");
+        var reference = ExternalReference.Create(Guid.NewGuid(), project.Id, null, ExternalReferenceType.LocalFile,
+            "Missing file", target);
+        await references.AddAsync(reference, TestContext.Current.CancellationToken);
+        var opener = new RecordingOpener();
+        var result = await new OpenExternalReference(references, opener,
+            new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance))
+            .ExecuteAsync(reference.Id, TestContext.Current.CancellationToken);
+
+        Assert.Equal(ProjectOperationStatus.ValidationFailed, result.Status);
+        Assert.Contains(result.Errors, error => error.Code == "ReferenceTargetMissing");
+        Assert.False(opener.WasCalled);
+        Assert.NotNull(await references.GetByIdAsync(reference.Id, TestContext.Current.CancellationToken));
+    }
+
     private static Requirement CreateRequirement(Guid projectId, string key, string title) => Requirement.Create(
         Guid.NewGuid(), projectId, key, title, null, null, RequirementPriority.Should,
         RequirementDecisionStatus.Proposed, null, RequirementSourceType.Internal, null, null, null, []);
@@ -167,5 +223,12 @@ public sealed class SqliteRequirementPersistenceTests
         }
         public ValueTask DisposeAsync()
         { if (Directory.Exists(RootPath)) Directory.Delete(RootPath, true); return ValueTask.CompletedTask; }
+    }
+
+    private sealed class RecordingOpener : IExternalReferenceOpener
+    {
+        public bool WasCalled { get; private set; }
+        public Task OpenAsync(string target, CancellationToken cancellationToken)
+        { WasCalled = true; return Task.CompletedTask; }
     }
 }
