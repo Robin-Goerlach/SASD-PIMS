@@ -60,6 +60,8 @@ internal static class Program
                 new CreateProject(repository, TimeProvider.System, failureHandler),
                 new LoadProject(repository, failureHandler),
                 new ListProjects(repository, failureHandler),
+                new UpdateProject(repository, TimeProvider.System, failureHandler),
+                new SetProjectArchiveState(repository, TimeProvider.System, failureHandler),
                 new ExportProject(
                     repository,
                     new JsonProjectExportWriter(),
@@ -87,7 +89,7 @@ internal static class Program
         {
             var errorId = ReportUnhandled(logger, exception);
             MessageBox.Show(
-                $"SASD PIMS could not start. Error ID: {errorId}",
+                $"SASD PIMS konnte nicht gestartet werden. Fehler-ID: {errorId}",
                 "SASD PIMS",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);

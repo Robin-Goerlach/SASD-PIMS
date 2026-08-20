@@ -22,15 +22,15 @@ public sealed class WinFormsBaselineTests
             form.PerformLayout();
 
             var textBoxes = Descendants(form).OfType<TextBox>().OrderBy(control => control.TabIndex).ToArray();
-            var save = Descendants(form).OfType<Button>().Single(button => button.Text == "&Save");
-            var cancel = Descendants(form).OfType<Button>().Single(button => button.Text == "&Cancel");
+            var save = Descendants(form).OfType<Button>().Single(button => button.Text == "&Speichern");
+            var cancel = Descendants(form).OfType<Button>().Single(button => button.Text == "&Abbrechen");
             var validation = Descendants(form).OfType<Label>()
-                .Single(label => label.AccessibleName == "Validation summary");
+                .Single(label => label.AccessibleName == "Validierungsfehler");
 
-            Assert.Equal([0, 1, 2], textBoxes.Select(control => control.TabIndex));
+            Assert.Equal(Enumerable.Range(0, 9), textBoxes.Select(control => control.TabIndex));
             Assert.All(textBoxes, control => Assert.False(string.IsNullOrWhiteSpace(control.AccessibleName)));
-            Assert.Equal(4, save.TabIndex);
-            Assert.Equal(5, cancel.TabIndex);
+            Assert.Equal(10, save.TabIndex);
+            Assert.Equal(11, cancel.TabIndex);
             Assert.Same(save, form.AcceptButton);
             Assert.Same(cancel, form.CancelButton);
 
@@ -38,7 +38,7 @@ public sealed class WinFormsBaselineTests
                 .GetMethod("SaveClicked", BindingFlags.Instance | BindingFlags.NonPublic)!
                 .Invoke(form, [save, EventArgs.Empty]);
 
-            Assert.Contains("required", validation.Text, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("erforderlich", validation.Text, StringComparison.OrdinalIgnoreCase);
             Assert.Equal(SystemColors.ControlText, validation.ForeColor);
         });
     }
@@ -71,12 +71,14 @@ public sealed class WinFormsBaselineTests
                 new CreateProject(repository, TimeProvider.System, failures),
                 new LoadProject(repository, failures),
                 new ListProjects(repository, failures),
+                new UpdateProject(repository, TimeProvider.System, failures),
+                new SetProjectArchiveState(repository, TimeProvider.System, failures),
                 new ExportProject(repository, new NoOpExportWriter(), TimeProvider.System, failures),
                 new(recovery, failures),
                 new(recovery, failures),
                 "synthetic.db",
                 "synthetic-backups",
-                "0.0.1-internal");
+                "0.1.0");
 
             var buttons = Descendants(form).OfType<Button>().ToArray();
             Assert.All(buttons, button => Assert.Contains('&', button.Text));
