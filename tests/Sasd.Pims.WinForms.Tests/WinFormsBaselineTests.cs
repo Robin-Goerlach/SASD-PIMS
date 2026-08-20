@@ -5,6 +5,8 @@ using Sasd.Pims.Application.Projects;
 using Sasd.Pims.Domain.Projects;
 using Sasd.Pims.Application.Requirements;
 using Sasd.Pims.Domain.Requirements;
+using Sasd.Pims.Application.Search;
+using Sasd.Pims.Application.Traceability;
 using Sasd.Pims.WinForms;
 using Xunit;
 
@@ -150,6 +152,25 @@ public sealed class WinFormsBaselineTests
         });
     }
 
+    [Fact]
+    public void SearchAndTraceabilityViewsAreNativeKeyboardAccessibleAndDpiAware()
+    {
+        RunInSta(() =>
+        {
+            var projectId = Guid.NewGuid();
+            using var search = new SearchForm(new SearchPims(new EmptySearchReader()),
+                [new(projectId, "UI", "UI", null, null, ProjectPhase.Idea, ActivityState.Active, null,
+                    ReviewFreshness.Current, DueDateIndication.Neutral, [], false)], projectId);
+            using var traceability = new TraceabilityForm(projectId, new EmptyTraceabilityReader(projectId));
+            Assert.Equal(AutoScaleMode.Dpi, search.AutoScaleMode);
+            Assert.Equal(AutoScaleMode.Dpi, traceability.AutoScaleMode);
+            Assert.All(Descendants(search).Where(control => control is TextBox or ComboBox or DataGridView),
+                control => Assert.False(string.IsNullOrWhiteSpace(control.AccessibleName)));
+            Assert.All(Descendants(search).OfType<Button>(), button => Assert.Contains('&', button.Text));
+            Assert.Equal("Traceability-Baum", Descendants(traceability).OfType<TreeView>().Single().AccessibleName);
+        });
+    }
+
     private static ProjectEditorForm CreateEditor()
     {
         var failures = new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance);
@@ -274,6 +295,18 @@ public sealed class WinFormsBaselineTests
 
     private sealed class NoOpReferenceOpener : IExternalReferenceOpener
     { public Task OpenAsync(string target, CancellationToken cancellationToken) => Task.CompletedTask; }
+
+    private sealed class EmptySearchReader : ISearchReader
+    {
+        public Task<SearchPage> SearchAsync(SearchQuery query, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new SearchPage([], 0, false));
+    }
+
+    private sealed class EmptyTraceabilityReader(Guid projectId) : ITraceabilityReader
+    {
+        public Task<TraceabilityNode?> GetProjectAsync(Guid id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<TraceabilityNode?>(new(TraceabilityNodeType.Project, projectId, projectId, "UI", []));
+    }
 
     private sealed class NoOpRecoveryService :
         Sasd.Pims.Application.Recovery.IDatabaseBackupService,

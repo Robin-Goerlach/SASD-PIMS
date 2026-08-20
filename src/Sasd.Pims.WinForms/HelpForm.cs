@@ -36,6 +36,16 @@ public sealed class HelpForm : Form
                 vor dem Speichern und Öffnen zentral geprüft. Fehlende lokale Ziele werden gemeldet, aber niemals
                 automatisch gelöscht. PIMS ruft HTTPS-Ziele nicht vorab ab und speichert keine Zugangsdaten.
 
+                Globale Suche (Strg+F) durchsucht Projekte, Anforderungen, Blockaden und externe Referenzen.
+                Objekttyp und Projekt sind kombinierbar; ein Treffer öffnet den zugehörigen Arbeitsbereich.
+                Traceability stellt ausschließlich vorhandene Projekt-, Anforderungs-, Akzeptanzkriterien-,
+                Quellen-, Nachweis-, Referenz- und Blockadenbeziehungen hierarchisch dar.
+
+                Der vollständige JSON-Export verwendet sasd-pims-exchange 1.0. Absolute lokale Pfade bleiben
+                unverändert und sind als maschinenlokal gekennzeichnet; Dateien werden weder gelesen noch
+                eingebettet. Der Markdown-Projektsteckbrief ist ein Export, kein Report-Snapshot. 0.4.0 bietet
+                keinen Import.
+
                 F1 öffnet diese Hilfe. Alle Daten bleiben lokal in der PIMS-Datenbank.
                 """,
         });

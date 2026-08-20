@@ -8,6 +8,7 @@ using Sasd.Pims.Infrastructure.Export;
 using Sasd.Pims.Infrastructure.Persistence;
 using Sasd.Pims.Application.Recovery;
 using Sasd.Pims.Application.Requirements;
+using Sasd.Pims.Application.Search;
 using Sasd.Pims.Infrastructure.Recovery;
 using Sasd.Pims.Infrastructure.References;
 
@@ -87,7 +88,10 @@ internal static class Program
                 new RestoreDatabaseBackup(recoveryService, failureHandler),
                 databasePath,
                 Path.Combine(applicationRoot, "backups"),
-                version);
+                version,
+                new SearchPims(new SqliteSearchReader(contextFactory)),
+                new SqliteTraceabilityReader(contextFactory),
+                new PortableExchangeService(contextFactory));
 
             System.Windows.Forms.Application.ThreadException += (_, eventArgs) =>
                 ReportUnhandled(logger, eventArgs.Exception);
