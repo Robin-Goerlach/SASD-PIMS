@@ -152,6 +152,60 @@ public sealed class ProjectUseCaseTests
         Assert.IsType<IOException>(logger.Exception);
     }
 
+    [Fact]
+    public async Task SteeringUpdateKeepsArchiveStateIndependentAndAdvancesRevision()
+    {
+        var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, Now.AddMinutes(-1));
+        project.Archive(Now.AddSeconds(-1));
+        var repository = new ProjectRepositoryFake { ProjectToLoad = project };
+        var useCase = new UpdateProjectSteering(repository, new FixedTimeProvider(Now), FailureHandler());
+
+        var result = await useCase.ExecuteAsync(new(project.Id, 2, ProjectPhase.Execution,
+            ActivityState.Active, new DateOnly(2026, 9, 30), null), TestContext.Current.CancellationToken);
+
+        Assert.Equal(ProjectOperationStatus.Success, result.Status);
+        Assert.True(result.Value?.IsArchived);
+        Assert.Equal(ProjectPhase.Execution, result.Value?.Phase);
+        Assert.Equal(ActivityState.Active, result.Value?.ActivityState);
+        Assert.Equal(3, result.Value?.Revision);
+    }
+
+    [Fact]
+    public async Task CatalogDerivesEveryAttentionReasonFromCurrentFacts()
+    {
+        var project = Project.Reconstitute(Guid.NewGuid(), "DEMO", "Demo", null, null, null, null, null,
+            null, [], ProjectPhase.Execution, ActivityState.Active, new DateOnly(2026, 8, 18),
+            Now.AddDays(-30), Now.AddDays(-1), false, Now.AddDays(-60), Now.AddDays(-2), 3);
+        var projects = new ProjectRepositoryFake { ProjectToLoad = project };
+        var blockers = new BlockerRepositoryFake { OpenProjectIds = [project.Id] };
+
+        var result = await new ListProjects(projects, blockers, new FixedTimeProvider(Now), FailureHandler())
+            .ExecuteAsync(new(NeedsAttentionOnly: true), TestContext.Current.CancellationToken);
+
+        var row = Assert.Single(result.Value!);
+        Assert.Equal([AttentionReason.ReviewOverdue, AttentionReason.OpenBlocker,
+            AttentionReason.TargetDateOverdue], row.AttentionReasons);
+    }
+
+    [Fact]
+    public async Task BlockerUseCasesRetainResolutionHistory()
+    {
+        var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, Now.AddMinutes(-1));
+        var projects = new ProjectRepositoryFake { ProjectToLoad = project };
+        var blockers = new BlockerRepositoryFake();
+        var add = new AddProjectBlocker(projects, blockers, new FixedTimeProvider(Now), FailureHandler());
+
+        var added = await add.ExecuteAsync(project.Id, "Decision missing", "Escalated",
+            TestContext.Current.CancellationToken);
+        var resolved = await new ResolveProjectBlocker(blockers, new FixedTimeProvider(Now.AddHours(1)), FailureHandler())
+            .ExecuteAsync(added.Value!.Id, "Decision recorded", TestContext.Current.CancellationToken);
+
+        Assert.Equal(ProjectOperationStatus.Success, resolved.Status);
+        Assert.False(resolved.Value!.IsOpen);
+        Assert.Equal("Decision recorded", resolved.Value.ResolutionNote);
+        Assert.Single((await blockers.ListByProjectAsync(project.Id, TestContext.Current.CancellationToken)));
+    }
+
     private sealed class ProjectRepositoryFake : IProjectRepository
     {
         public List<Project> AddedProjects { get; } = [];
@@ -204,6 +258,25 @@ public sealed class ProjectUseCaseTests
             UpdatedProjects.Add(project);
             return Task.FromResult(ProjectWriteResult.Saved);
         }
+    }
+
+    private sealed class BlockerRepositoryFake : IProjectBlockerRepository
+    {
+        private readonly List<ProjectBlocker> blockers = [];
+        public HashSet<Guid> OpenProjectIds { get; init; } = [];
+        public Task AddAsync(ProjectBlocker blocker, CancellationToken cancellationToken)
+        {
+            blockers.Add(blocker);
+            return Task.CompletedTask;
+        }
+        public Task<ProjectBlocker?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+            Task.FromResult(blockers.SingleOrDefault(blocker => blocker.Id == id));
+        public Task<IReadOnlyList<ProjectBlocker>> ListByProjectAsync(Guid projectId, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<ProjectBlocker>>(blockers.Where(blocker => blocker.ProjectId == projectId).ToArray());
+        public Task<IReadOnlySet<Guid>> GetProjectIdsWithOpenBlockersAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(OpenProjectIds.Count > 0 ? OpenProjectIds :
+                (IReadOnlySet<Guid>)blockers.Where(blocker => blocker.IsOpen).Select(blocker => blocker.ProjectId).ToHashSet());
+        public Task<bool> ResolveAsync(ProjectBlocker blocker, CancellationToken cancellationToken) => Task.FromResult(true);
     }
 
     private static CreateProject CreateUseCase(IProjectRepository repository) =>
