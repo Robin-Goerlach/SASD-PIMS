@@ -6,6 +6,23 @@ The project intends to follow [Semantic Versioning](https://semver.org/) once re
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-20
+
+### Added
+- Practical German master-detail project catalog with create, view, edit, search and selection.
+- Goal, benefit, project-type/area codes, responsibility and normalised tags.
+- Reversible archive/reactivation without a normal hard-delete operation.
+- Optimistic revision conflict detection for project updates.
+- Additive SQLite migration from the accepted 0.0.1 schema with verified pre-migration backup.
+- Complete project-data JSON export schema `1.1-internal`.
+
+### Changed
+- Self-contained `win-x64` ZIP is the default local package.
+- Current database schema is `202608200001_ProjectCatalog`.
+
+### Security
+- Migration, backup and restore preserve checksum, schema, integrity and rollback validation.
+
 ## [0.0.1-internal] - 2026-08-19
 
 Internal architecture proof; not a supported production release.

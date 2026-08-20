@@ -1,8 +1,8 @@
 # SASD PIMS
 
-> **Status:** `0.0.1-internal` vertical-slice implementation complete on the local development branch.
-> The implemented PoC proves minimal Project creation, SQLite persistence/reopen, export, diagnostics and verified recovery.
-> **This is an internal architecture proof, not a supported production release.**
+> **Status:** `0.1.0` practical local project catalog implemented and under release verification.
+> It supports project master data, search, editing, reversible archiving, SQLite persistence,
+> JSON export and verified backup/restore.
 
 **SASD PIMS (Project Information Management System)** is a planned local-first Windows desktop application for maintaining the information that describes and governs SASD software projects. It is intentionally not a general task-management platform or Jira replacement.
 
@@ -193,29 +193,27 @@ dotnet build Sasd.Pims.slnx -c Release
 dotnet test Sasd.Pims.slnx -c Release
 ```
 
-Create the evaluated internal self-contained ZIP (generated files remain under ignored `artifacts/`):
+Create the self-contained 0.1.0 ZIP (generated files remain under ignored `artifacts/`):
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-0.0.1-internal.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-0.1.0.ps1
 ```
 
 ## Usage
 
-The executable vertical slice (`0.0.1-internal`) implements this deliberately narrow path:
+Version `0.1.0` provides this local workflow:
 
 1. start the application;
-2. create a project;
-3. validate input;
-4. persist it to SQLite;
-5. close the application;
-6. reopen and load the project;
-7. exercise a minimal export;
-8. exercise backup and restore;
-9. verify logging and failure handling.
+2. list, search and select projects;
+3. create and centrally validate project master data;
+4. view and edit projects while detecting stale revisions;
+5. archive or reactivate projects without deleting data;
+6. close and reopen with the same SQLite data;
+7. export a complete project as versioned JSON;
+8. create and restore verified backups.
 
 Runtime data is stored under `%LOCALAPPDATA%\SASD\PIMS`; user-selected exports and backups
-are written to the selected path. Version `0.1.0` will turn this proof into a practically
-usable local project catalog; that milestone has not started.
+are written to the selected path. See `docs/releases/0.1.0/QUICK-START.md` for operation details.
 
 ## Privacy and security
 

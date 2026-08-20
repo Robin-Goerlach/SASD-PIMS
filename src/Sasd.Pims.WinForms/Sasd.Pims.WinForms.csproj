@@ -5,7 +5,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <Version>0.0.1-internal</Version>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
