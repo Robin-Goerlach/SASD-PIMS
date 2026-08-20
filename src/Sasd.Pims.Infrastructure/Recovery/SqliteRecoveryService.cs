@@ -102,7 +102,7 @@ public sealed class SqliteRecoveryService : IDatabaseBackupService, IDatabaseRes
         CancellationToken cancellationToken = default)
     {
         var activeDatabase = Path.GetFullPath(databasePath);
-        var stagingDirectory = CreateStagingDirectory("restore");
+        var stagingDirectory = CreateRestoreStagingDirectory(activeDatabase);
         var stagedDatabase = Path.Combine(stagingDirectory, DatabaseEntryName);
         var displacedDatabase = activeDatabase + ".restore-previous-" + Guid.NewGuid().ToString("N");
 
@@ -150,12 +150,15 @@ public sealed class SqliteRecoveryService : IDatabaseBackupService, IDatabaseRes
             Directory.CreateDirectory(Path.GetDirectoryName(activeDatabase)!);
             if (File.Exists(activeDatabase))
             {
-                _fileOperations.Move(activeDatabase, displacedDatabase);
+                _fileOperations.Replace(stagedDatabase, activeDatabase, displacedDatabase);
+            }
+            else
+            {
+                _fileOperations.Move(stagedDatabase, activeDatabase);
             }
 
             try
             {
-                _fileOperations.Copy(stagedDatabase, activeDatabase);
                 await EnsureIntegrityAsync(activeDatabase, cancellationToken).ConfigureAwait(false);
                 await SmokeReadAsync(activeDatabase, cancellationToken).ConfigureAwait(false);
                 TryDeleteFile(displacedDatabase);
@@ -287,6 +290,15 @@ public sealed class SqliteRecoveryService : IDatabaseBackupService, IDatabaseRes
     private static string CreateStagingDirectory(string operation)
     {
         var path = Path.Combine(Path.GetTempPath(), "SASD-PIMS", operation, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
+    private static string CreateRestoreStagingDirectory(string activeDatabase)
+    {
+        var databaseDirectory = Path.GetDirectoryName(activeDatabase)
+            ?? throw new InvalidOperationException("The active database has no parent directory.");
+        var path = Path.Combine(databaseDirectory, ".restore-staging-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
     }

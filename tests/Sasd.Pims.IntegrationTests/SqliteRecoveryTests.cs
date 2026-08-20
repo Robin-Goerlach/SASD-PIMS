@@ -210,7 +210,7 @@ public sealed class SqliteRecoveryTests
         await using var fixture = await RecoveryFixture.CreateAsync(TestContext.Current.CancellationToken);
         var active = await fixture.AddProjectAsync("ACTIVE-REPLACE", TestContext.Current.CancellationToken);
         var packagePath = await fixture.CreateBackupAsync(TestContext.Current.CancellationToken);
-        var failingService = new SqliteRecoveryService(new FailingCopyFileOperations());
+        var failingService = new SqliteRecoveryService(new FailingReplaceFileOperations());
 
         await Assert.ThrowsAsync<IOException>(() => failingService.RestoreAsync(
             fixture.DatabasePath,
@@ -326,12 +326,12 @@ public sealed class SqliteRecoveryTests
         }
     }
 
-    private sealed class FailingCopyFileOperations : IRecoveryFileOperations
+    private sealed class FailingReplaceFileOperations : IRecoveryFileOperations
     {
-        public void Copy(string sourcePath, string destinationPath) =>
-            throw new IOException("Synthetic replacement failure.");
-
         public void Move(string sourcePath, string destinationPath) =>
             File.Move(sourcePath, destinationPath);
+
+        public void Replace(string sourcePath, string destinationPath, string backupPath) =>
+            throw new IOException("Synthetic replacement failure.");
     }
 }
