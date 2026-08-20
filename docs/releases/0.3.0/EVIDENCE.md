@@ -6,7 +6,7 @@
 
 **Branch:** `codex/0.3.0`
 
-**Status:** automated milestone gates passed locally; GitHub Quality and the manual checks below remain to be recorded
+**Status:** automated milestone gates and GitHub Quality passed; manual checks are noted below
 
 ## Delivered behavior
 
@@ -80,7 +80,12 @@ DPI inspection and the complete visible Requirement/reference workflow remain ma
 
 ## GitHub Quality
 
-Branch push and GitHub Quality result will be recorded after this evidence commit is published.
+GitHub Quality passed for release-evidence commit `fa663bc`:
+
+- workflow: `Quality`;
+- run: `32360637405`;
+- conclusion: `success`;
+- URL: <https://github.com/Robin-Goerlach/SASD-PIMS/actions/runs/32360637405>.
 
 ## Dependencies, limitations and debt
 
