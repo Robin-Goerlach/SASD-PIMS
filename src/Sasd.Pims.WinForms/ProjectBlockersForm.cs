@@ -10,6 +10,11 @@ public sealed class ProjectBlockersForm : Form
     private readonly AddProjectBlocker add;
     private readonly ResolveProjectBlocker resolve;
     private readonly ListBox blockers = new() { Dock = DockStyle.Fill, AccessibleName = "Blockerverlauf" };
+    private readonly TextBox blockerDetails = new()
+    {
+        Dock = DockStyle.Fill, ReadOnly = true, Multiline = true, Height = 75,
+        AccessibleName = "Details des ausgewählten Blockers",
+    };
     private readonly TextBox summary = new() { AccessibleName = "Blocker-Kurztext" };
     private readonly TextBox details = new() { AccessibleName = "Blocker-Details", Multiline = true, Height = 55 };
     private readonly Label status = new() { AutoSize = true };
@@ -28,15 +33,17 @@ public sealed class ProjectBlockersForm : Form
         var resolveButton = new Button { Text = "&Ausgewählten lösen", AutoSize = true, AccessibleName = "Ausgewählten Blocker lösen" };
         resolveButton.Click += ResolveClicked;
         var close = new Button { Text = "&Schließen", AutoSize = true, DialogResult = DialogResult.OK };
-        var grid = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(12), ColumnCount = 2, RowCount = 5 };
+        blockers.SelectedIndexChanged += (_, _) => ShowSelectedDetails();
+        var grid = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(12), ColumnCount = 2, RowCount = 6 };
         grid.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         grid.Controls.Add(blockers, 0, 0); grid.SetColumnSpan(blockers, 2);
-        grid.Controls.Add(new Label { Text = "&Kurztext", AutoSize = true }, 0, 1); grid.Controls.Add(summary, 1, 1);
-        grid.Controls.Add(new Label { Text = "&Details", AutoSize = true }, 0, 2); grid.Controls.Add(details, 1, 2);
-        grid.Controls.Add(status, 0, 3); grid.SetColumnSpan(status, 2);
+        grid.Controls.Add(blockerDetails, 0, 1); grid.SetColumnSpan(blockerDetails, 2);
+        grid.Controls.Add(new Label { Text = "&Kurztext", AutoSize = true }, 0, 2); grid.Controls.Add(summary, 1, 2);
+        grid.Controls.Add(new Label { Text = "&Details", AutoSize = true }, 0, 3); grid.Controls.Add(details, 1, 3);
+        grid.Controls.Add(status, 0, 4); grid.SetColumnSpan(status, 2);
         var commands = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, FlowDirection = FlowDirection.RightToLeft };
         commands.Controls.AddRange([close, resolveButton, addButton]);
-        grid.Controls.Add(commands, 0, 4); grid.SetColumnSpan(commands, 2);
+        grid.Controls.Add(commands, 0, 5); grid.SetColumnSpan(commands, 2);
         Controls.Add(grid);
     }
 
@@ -62,6 +69,16 @@ public sealed class ProjectBlockersForm : Form
         if (result.Value is null) { status.Text = "Blocker konnten nicht geladen werden."; return; }
         blockers.DataSource = result.Value.Select(value => new BlockerRow(value)).ToList();
         status.Text = $"{result.Value.Count(value => value.IsOpen)} offene(r) Blocker.";
+    }
+
+    private void ShowSelectedDetails()
+    {
+        if (blockers.SelectedItem is not BlockerRow row) { blockerDetails.Clear(); return; }
+        var value = row.Value;
+        blockerDetails.Text = $"Kurztext: {value.Summary}{Environment.NewLine}" +
+            $"Details: {value.Details ?? "–"}{Environment.NewLine}" +
+            $"Status: {(value.IsOpen ? "Offen" : "Gelöst")}{Environment.NewLine}" +
+            $"Lösung: {value.ResolutionNote ?? "–"}";
     }
     private sealed record BlockerRow(ProjectBlockerDto Value)
     {
