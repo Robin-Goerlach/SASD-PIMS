@@ -59,79 +59,101 @@ If two governing sources materially conflict and the baseline does not resolve t
 
 ## 2. Current active milestone
 
-**Active milestone: `0.1.0 — Practical project catalog`**
+**Active milestone: `0.2.0 — Status, reviews and blockers`**
 
-`0.0.1-internal — Vertical architecture slice` has been implemented and technically verified. Its implementation evidence is recorded under:
+`0.1.0 — Practical project catalog` is implemented, verified, merged to `main`, tagged `v0.1.0` and released.
+
+Implement only `0.2.0` until the user explicitly approves transition to `0.3.0`.
+
+The binding semantic clarification for this milestone is:
 
 ```text
-docs/releases/0.0.1-internal/EVIDENCE.md
+docs/implementation/DECISION-0.2.0-PROJECT-STEERING-SEMANTICS.md
 ```
 
-Do not reopen or refactor the accepted `0.0.1-internal` implementation merely for stylistic reasons. Change it only when a `0.1.0` requirement, defect, migration need, security/recovery issue, or clearly justified simplification requires the change.
+Read that decision note before implementing `0.2.0`.
 
-Until the user explicitly changes the active milestone or the repository baseline is updated, implement only work required for `0.1.0`.
+### `0.2.0` objective
 
-The purpose of `0.1.0` is to make SASD PIMS **practically usable as a local project catalog**.
+Turn the accepted project catalog into a lightweight project-steering instrument without turning PIMS into a task manager.
 
-The user must be able to:
+Required concepts:
 
-- start PIMS reliably;
-- see existing projects in a useful project list;
-- create a project;
-- view and edit project master data;
-- save changes;
-- close and reopen the application without losing data;
-- identify and select projects clearly;
-- receive understandable validation feedback;
-- use reversible archive/deactivate and reactivation behaviour once the corresponding domain rule is finalized for this milestone;
-- continue to use the proven backup/restore path after the `0.1.0` schema migration;
-- use the core catalog workflow by keyboard and on the required DPI baseline.
+- controlled `ProjectPhase`;
+- controlled `ActivityState`;
+- optional Project target date and derived due-date indication;
+- persisted review dates with derived review freshness;
+- detailed Project blockers with resolution information;
+- derived attention reasons;
+- archive state kept independent;
+- a conventional application menu for discoverability;
+- local/offline F1 help, tooltips and glossary explanations;
+- a real additive `0.1.0 → 0.2.0` database migration.
 
-`0.1.0` must also prove the first real schema evolution from the accepted `0.0.1-internal` database.
+Do not introduce a generic `Status`, generic persisted `Health`, arbitrary user-extensible state vocabulary, configurable workflow engine or task-management subsystem.
 
-Not in `0.1.0`:
+### Controlled vocabularies
 
-- Requirement management;
-- Product lifecycle/product pipeline;
-- Risk, Decision, Milestone or Release management;
-- status-review/blocker functionality planned for `0.2.0`;
-- dashboards or charts;
-- GitHub/provider APIs;
-- cloud synchronization;
-- plugin framework;
-- generic task management;
-- complex reporting;
-- installer or automatic updater unless explicitly requested for a focused validation task.
+Canonical Project Phase values:
 
-### Milestone boundary rule
+- `Idea`;
+- `Preparation`;
+- `Execution`;
+- `Validation`;
+- `Closure`.
 
-Never pull a later milestone feature forward merely because its design already exists in the documentation.
+Canonical Activity State values:
 
-If a later feature is technically useful but not necessary for the active milestone, defer it.
+- `NotStarted`;
+- `Active`;
+- `Paused`;
+- `Completed`;
+- `Cancelled`.
 
-### Default autonomy inside the active milestone
+A version-controlled JSON resource may supply labels, help text, order or localization, but canonical domain values remain controlled by PIMS and are not freely user-extensible.
 
-When the user authorizes autonomous milestone work, Codex may:
+### Important independence rules
 
-- determine the next open implementation step inside `0.1.0`;
-- implement, build, test and debug it;
-- make small reversible technical decisions that do not change product semantics or approved architecture;
-- add regression tests;
-- perform small local refactorings needed for the current change;
-- commit logically complete changes after their relevant quality gates pass.
+- Project Phase != Activity State.
+- Archive != Completed.
+- Archive != Paused.
+- Archive != Cancelled.
+- Completing a project does not automatically archive it.
+- Reactivating an archived project does not silently change its activity state.
 
-Codex must stop and ask only when a decision would materially change:
+### Derived information
 
-- product/domain semantics;
-- approved architecture or technology baseline;
-- data-loss/recovery guarantees;
-- security posture;
-- licence obligations;
-- a public/portable exchange contract;
-- supported platform;
-- milestone scope.
+Persist facts; derive time-sensitive presentation state.
 
-Do not transition to `0.2.0` without explicit user approval.
+In particular:
+
+- derive review freshness from `LastReviewedAtUtc?`, `NextReviewDueAtUtc?` and current time;
+- derive due-date indication from target date/current date/activity state;
+- derive attention from current reasons;
+- do not persist traffic-light colours or an authoritative generic health value.
+
+The detailed 14-day due-date rule and blocker/review semantics are defined in the milestone decision note.
+
+### Menu and help
+
+Every major user function must be reachable through the application menu or an equally obvious primary UI path.
+
+Keep help local/offline-first:
+
+- tooltips;
+- contextual help where useful;
+- F1;
+- concise glossary.
+
+Help text and source documentation must use the same domain semantics.
+
+### Milestone boundary
+
+Do not pull `0.3.0` or later functionality forward.
+
+During an explicitly authorized autonomous milestone run, Codex may implement, test, debug, create coherent commits and push the `codex/0.2.0` branch. Stop only for decisions that materially change product semantics, architecture, security/recovery guarantees, licence obligations, public exchange contracts, supported platform or milestone scope.
+
+Do not merge to `main`, create `v0.2.0` or begin `0.3.0` without explicit user approval.
 
 ---
 
@@ -154,7 +176,7 @@ Target evidence:
 - unit/integration/architecture tests run;
 - reproducible internal artifact can be built.
 
-### `0.1.0 — Practical project catalog`
+### `0.1.0 — Practical project catalog` — completed
 
 Goal: first practically useful local project-master-data release.
 
@@ -331,6 +353,14 @@ Keep these domain concepts distinct:
 - Risk.
 
 Do not merge concepts merely to simplify a database schema.
+
+### Controlled domain vocabularies
+
+Where PIMS uses a finite business vocabulary, canonical values are owned by the domain and versioned with the application.
+
+A JSON resource may provide display labels, descriptions, sort order or localization, but it must not turn a controlled vocabulary into arbitrary user-extensible data unless a later explicit product decision changes that rule.
+
+Avoid generic fields named only `Status` when the business meaning is more precise. Prefer explicit concepts such as `ProjectPhase`, `ActivityState`, `ReviewFreshness` and archive state.
 
 ---
 
@@ -555,6 +585,8 @@ Minimum practical UI scope:
 The repository dashboard screenshot is a **design concept**, not proof of implemented functionality and not a requirement to reproduce the full dashboard in `0.1.0`.
 
 Prioritize usability and clarity over visual sophistication. Do not add Ribbon, charts, complex themes, docking or custom-drawing infrastructure just to make the early release look more elaborate.
+
+For `0.2.0`, add a conventional application menu and local help/glossary support. Keep the implementation native and simple; do not introduce a browser-based help framework or external documentation dependency merely to provide F1/help content.
 
 ### Accessibility and DPI
 
