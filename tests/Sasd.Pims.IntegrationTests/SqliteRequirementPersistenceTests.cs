@@ -177,6 +177,24 @@ public sealed class SqliteRequirementPersistenceTests
     }
 
     [Fact]
+    public async Task NewRequirementCannotBypassProposedInitialState()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        var projects = new SqliteProjectRepository(database.Factory);
+        var project = Project.Create(Guid.NewGuid(), "INITIAL-STATE", "Initial state", null, Now);
+        await projects.AddAsync(project, TestContext.Current.CancellationToken);
+        var requirements = new SqliteRequirementRepository(database.Factory);
+        var references = new SqliteExternalReferenceRepository(database.Factory);
+        var result = await new CreateRequirement(projects, requirements, references,
+            new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance)).ExecuteAsync(project.Id,
+            new("Bypass", null, null, RequirementPriority.Should, RequirementDecisionStatus.Approved, null,
+                RequirementSourceType.Internal, null, null, null, []), TestContext.Current.CancellationToken);
+        Assert.Equal(ProjectOperationStatus.ValidationFailed, result.Status);
+        Assert.Contains(result.Errors, error => error.Code == "NewRequirementMustBeProposed");
+        Assert.Empty(await requirements.ListByProjectAsync(project.Id, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task MissingLocalTargetIsReportedWithoutOpeningOrDeletingReference()
     {
         await using var database = await TestDatabase.CreateAsync();

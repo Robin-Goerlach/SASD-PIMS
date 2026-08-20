@@ -38,6 +38,7 @@ public sealed class RequirementEditorForm : Form
         decision.DataSource = Enum.GetValues<RequirementDecisionStatus>().Select(value => new EnumOption<RequirementDecisionStatus>(value, RequirementLabels.Decision(value))).ToList();
         sourceType.DataSource = Enum.GetValues<RequirementSourceType>().Select(value => new EnumOption<RequirementSourceType>(value, RequirementLabels.Source(value))).ToList();
         priority.DisplayMember = decision.DisplayMember = sourceType.DisplayMember = "Label";
+        decision.Enabled = existing is not null;
         sourceReference.DataSource = ReferenceOptions(references); sourceReference.DisplayMember = nameof(ReferenceOption.Label);
         criteria.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Kriterium", DataPropertyName = nameof(CriterionRow.Text), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
         var verification = new DataGridViewComboBoxColumn { HeaderText = "Prüfreferenz", DataPropertyName = nameof(CriterionRow.VerificationReferenceId), DataSource = ReferenceOptions(references), DisplayMember = nameof(ReferenceOption.Label), ValueMember = nameof(ReferenceOption.Id), Width = 220 };
@@ -99,10 +100,13 @@ public sealed class RequirementEditorForm : Form
     private static void Add(TableLayoutPanel panel, int row, string label, Control control)
     { control.Dock = DockStyle.Fill; panel.Controls.Add(new Label { Text = label, AutoSize = true }, 0, row); panel.Controls.Add(control, 1, row); }
     private sealed record ReferenceOption(Guid? Id, string Label);
-    private sealed class CriterionRow(Guid? id, string text, Guid? verificationReferenceId)
+    private sealed class CriterionRow
     {
-        public Guid? Id { get; set; } = id;
-        public string Text { get; set; } = text;
-        public Guid? VerificationReferenceId { get; set; } = verificationReferenceId;
+        public CriterionRow() { }
+        public CriterionRow(Guid? id, string text, Guid? verificationReferenceId)
+        { Id = id; Text = text; VerificationReferenceId = verificationReferenceId; }
+        public Guid? Id { get; set; }
+        public string Text { get; set; } = string.Empty;
+        public Guid? VerificationReferenceId { get; set; }
     }
 }

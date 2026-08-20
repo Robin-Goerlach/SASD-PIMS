@@ -16,6 +16,9 @@ public sealed class CreateRequirement(IProjectRepository projects, IRequirementR
         {
             if (await projects.GetByIdAsync(projectId, cancellationToken).ConfigureAwait(false) is null)
                 return ProjectOperationResult.NotFound<RequirementDto>();
+            if (command.DecisionStatus != RequirementDecisionStatus.Proposed)
+                return ProjectOperationResult.ValidationFailed<RequirementDto>([new(nameof(command.DecisionStatus),
+                    "NewRequirementMustBeProposed", "New Requirements must start as Proposed.")]);
             var id = Guid.NewGuid();
             var criteria = RequirementUseCaseSupport.BuildCriteria(id, command.AcceptanceCriteria);
             var referenceFailure = await RequirementUseCaseSupport.ValidateReferencesAsync<RequirementDto>(projectId,
