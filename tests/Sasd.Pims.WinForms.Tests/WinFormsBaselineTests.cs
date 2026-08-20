@@ -3,6 +3,8 @@ using System.Reflection;
 using Sasd.Pims.Application.Diagnostics;
 using Sasd.Pims.Application.Projects;
 using Sasd.Pims.Domain.Projects;
+using Sasd.Pims.Application.Requirements;
+using Sasd.Pims.Domain.Requirements;
 using Sasd.Pims.WinForms;
 using Xunit;
 
@@ -68,6 +70,8 @@ public sealed class WinFormsBaselineTests
             var failures = new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance);
             var recovery = new NoOpRecoveryService();
             var blockers = new EmptyBlockerRepository();
+            var requirements = new EmptyRequirementRepository();
+            var references = new EmptyReferenceRepository();
             using var form = new MainForm(
                 new CreateProject(repository, TimeProvider.System, failures),
                 new LoadProject(repository, failures),
@@ -79,6 +83,12 @@ public sealed class WinFormsBaselineTests
                 new ListProjectBlockers(blockers, failures),
                 new AddProjectBlocker(repository, blockers, TimeProvider.System, failures),
                 new ResolveProjectBlocker(blockers, TimeProvider.System, failures),
+                new ListRequirements(requirements, failures),
+                new CreateRequirement(repository, requirements, references, failures),
+                new UpdateRequirement(requirements, references, failures),
+                new ListExternalReferences(references, failures),
+                new SaveExternalReference(repository, requirements, references, failures),
+                new OpenExternalReference(references, new NoOpReferenceOpener(), failures),
                 new ExportProject(repository, new NoOpExportWriter(), TimeProvider.System, failures),
                 new(recovery, failures),
                 new(recovery, failures),
@@ -113,6 +123,30 @@ public sealed class WinFormsBaselineTests
             Assert.Equal(AutoScaleMode.Dpi, help.AutoScaleMode);
             Assert.Contains("14 Kalendertagen", Descendants(help).OfType<TextBox>().Single().Text,
                 StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public void RequirementAndReferenceDialogsUseNativeAccessibleDpiControls()
+    {
+        RunInSta(() =>
+        {
+            var failures = new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance);
+            var projects = new EmptyProjectRepository();
+            var requirements = new EmptyRequirementRepository();
+            var references = new EmptyReferenceRepository();
+            var create = new CreateRequirement(projects, requirements, references, failures);
+            var update = new UpdateRequirement(requirements, references, failures);
+            var saveReference = new SaveExternalReference(projects, requirements, references, failures);
+            using var editor = new RequirementEditorForm(Guid.NewGuid(), create, update, []);
+            using var referenceEditor = new ExternalReferenceEditorForm(Guid.NewGuid(), null, saveReference);
+
+            Assert.Equal(AutoScaleMode.Dpi, editor.AutoScaleMode);
+            Assert.Equal(AutoScaleMode.Dpi, referenceEditor.AutoScaleMode);
+            Assert.All(Descendants(editor).Where(control => control is TextBox or ComboBox or DataGridView),
+                control => Assert.False(string.IsNullOrWhiteSpace(control.AccessibleName)));
+            Assert.All(Descendants(referenceEditor).OfType<Button>(),
+                button => Assert.Contains('&', button.Text));
         });
     }
 
@@ -220,6 +254,26 @@ public sealed class WinFormsBaselineTests
             Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
         public Task<bool> ResolveAsync(ProjectBlocker blocker, CancellationToken cancellationToken) => Task.FromResult(false);
     }
+
+    private sealed class EmptyRequirementRepository : IRequirementRepository
+    {
+        public Task<string> GetNextKeyAsync(Guid projectId, CancellationToken cancellationToken) => Task.FromResult("REQ-001");
+        public Task<RequirementWriteResult> AddAsync(Requirement requirement, CancellationToken cancellationToken) => Task.FromResult(RequirementWriteResult.Saved);
+        public Task<RequirementWriteResult> UpdateAsync(Requirement requirement, int expectedRevision, CancellationToken cancellationToken) => Task.FromResult(RequirementWriteResult.Saved);
+        public Task<Requirement?> GetByIdAsync(Guid id, CancellationToken cancellationToken) => Task.FromResult<Requirement?>(null);
+        public Task<IReadOnlyList<Requirement>> ListByProjectAsync(Guid projectId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<Requirement>>([]);
+    }
+
+    private sealed class EmptyReferenceRepository : IExternalReferenceRepository
+    {
+        public Task<RequirementWriteResult> AddAsync(ExternalReference reference, CancellationToken cancellationToken) => Task.FromResult(RequirementWriteResult.Saved);
+        public Task<RequirementWriteResult> UpdateAsync(ExternalReference reference, int expectedRevision, CancellationToken cancellationToken) => Task.FromResult(RequirementWriteResult.Saved);
+        public Task<ExternalReference?> GetByIdAsync(Guid id, CancellationToken cancellationToken) => Task.FromResult<ExternalReference?>(null);
+        public Task<IReadOnlyList<ExternalReference>> ListByProjectAsync(Guid projectId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ExternalReference>>([]);
+    }
+
+    private sealed class NoOpReferenceOpener : IExternalReferenceOpener
+    { public Task OpenAsync(string target, CancellationToken cancellationToken) => Task.CompletedTask; }
 
     private sealed class NoOpRecoveryService :
         Sasd.Pims.Application.Recovery.IDatabaseBackupService,

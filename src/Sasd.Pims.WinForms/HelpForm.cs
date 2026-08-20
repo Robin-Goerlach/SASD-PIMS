@@ -1,6 +1,6 @@
 namespace Sasd.Pims.WinForms;
 
-/// <summary>Provides local, offline help for the controlled 0.2 steering vocabulary.</summary>
+/// <summary>Provides local, offline help for project steering, Requirements and typed references.</summary>
 public sealed class HelpForm : Form
 {
     public HelpForm()
@@ -26,6 +26,15 @@ public sealed class HelpForm : Form
 
                 Handlungsbedarf besteht bei überfälligem Review, offenem Blocker oder überfälligem Zieltermin.
                 Blocker sind konkrete Hindernisse, keine Aufgaben. Gelöste Blocker bleiben im Verlauf erhalten.
+
+                Anforderungen gehören immer genau zu einem Projekt. Ihre Priorität (Muss, Soll, Kann) ist
+                unabhängig vom Entscheidungsstatus. Zurückgestellte und abgelehnte Anforderungen bleiben mit
+                Begründung erhalten. Muss-Anforderungen benötigen mindestens ein Akzeptanzkriterium.
+
+                Referenzen sind typisierte Verweise; PIMS kopiert weder Dokumente noch Chats, Repositories oder
+                Aufgaben. ExternalTask bezeichnet ausdrücklich eine Aufgabe in einem externen System. Ziele werden
+                vor dem Speichern und Öffnen zentral geprüft. Fehlende lokale Ziele werden gemeldet, aber niemals
+                automatisch gelöscht. PIMS ruft HTTPS-Ziele nicht vorab ab und speichert keine Zugangsdaten.
 
                 F1 öffnet diese Hilfe. Alle Daten bleiben lokal in der PIMS-Datenbank.
                 """,

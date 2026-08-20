@@ -69,5 +69,67 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
             entity.HasOne(tag => tag.Project).WithMany(project => project.Tags)
                 .HasForeignKey(tag => tag.ProjectId).OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<ExternalReferenceRecord>(entity =>
+        {
+            entity.Property(item => item.Id).ValueGeneratedNever().HasColumnType("TEXT");
+            entity.Property(item => item.ProjectId).HasColumnType("TEXT");
+            entity.Property(item => item.RequirementId).HasColumnType("TEXT");
+            entity.Property(item => item.Type).HasConversion<string>().HasMaxLength(32).HasColumnType("TEXT");
+            entity.Property(item => item.Title).IsRequired().HasColumnType("TEXT");
+            entity.Property(item => item.Target).IsRequired().HasColumnType("TEXT");
+            entity.Property(item => item.Revision).IsConcurrencyToken().HasColumnType("INTEGER");
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => item.ProjectId);
+            entity.HasIndex(item => item.RequirementId);
+            entity.ToTable("ExternalReferences");
+            entity.HasOne(item => item.Project).WithMany(project => project.ExternalReferences)
+                .HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<RequirementRecord>().WithMany().HasForeignKey(item => item.RequirementId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<RequirementRecord>(entity =>
+        {
+            entity.Property(item => item.Id).ValueGeneratedNever().HasColumnType("TEXT");
+            entity.Property(item => item.ProjectId).HasColumnType("TEXT");
+            entity.Property(item => item.Key).IsRequired().HasMaxLength(32).HasColumnType("TEXT");
+            entity.Property(item => item.Title).IsRequired().HasColumnType("TEXT");
+            entity.Property(item => item.Description).HasColumnType("TEXT");
+            entity.Property(item => item.Rationale).HasColumnType("TEXT");
+            entity.Property(item => item.Priority).HasConversion<string>().HasMaxLength(16).HasColumnType("TEXT");
+            entity.Property(item => item.DecisionStatus).HasConversion<string>().HasMaxLength(16).HasColumnType("TEXT");
+            entity.Property(item => item.DecisionReason).HasColumnType("TEXT");
+            entity.Property(item => item.SourceType).HasConversion<string>().HasMaxLength(32).HasColumnType("TEXT");
+            entity.Property(item => item.SourceDate).HasColumnType("TEXT");
+            entity.Property(item => item.SourceSummary).HasColumnType("TEXT");
+            entity.Property(item => item.SourceReferenceId).HasColumnType("TEXT");
+            entity.Property(item => item.Revision).IsConcurrencyToken().HasColumnType("INTEGER");
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => new { item.ProjectId, item.Key }).IsUnique();
+            entity.HasIndex(item => item.SourceReferenceId);
+            entity.ToTable("Requirements");
+            entity.HasOne(item => item.Project).WithMany(project => project.Requirements)
+                .HasForeignKey(item => item.ProjectId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ExternalReferenceRecord>().WithMany().HasForeignKey(item => item.SourceReferenceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AcceptanceCriterionRecord>(entity =>
+        {
+            entity.Property(item => item.Id).ValueGeneratedNever().HasColumnType("TEXT");
+            entity.Property(item => item.RequirementId).HasColumnType("TEXT");
+            entity.Property(item => item.Sequence).HasColumnType("INTEGER");
+            entity.Property(item => item.Text).IsRequired().HasColumnType("TEXT");
+            entity.Property(item => item.VerificationReferenceId).HasColumnType("TEXT");
+            entity.HasKey(item => item.Id);
+            entity.HasIndex(item => new { item.RequirementId, item.Sequence }).IsUnique();
+            entity.HasIndex(item => item.VerificationReferenceId);
+            entity.ToTable("AcceptanceCriteria");
+            entity.HasOne(item => item.Requirement).WithMany(requirement => requirement.AcceptanceCriteria)
+                .HasForeignKey(item => item.RequirementId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ExternalReferenceRecord>().WithMany().HasForeignKey(item => item.VerificationReferenceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

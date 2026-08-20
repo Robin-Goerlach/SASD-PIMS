@@ -7,7 +7,9 @@ using Sasd.Pims.Infrastructure.Diagnostics;
 using Sasd.Pims.Infrastructure.Export;
 using Sasd.Pims.Infrastructure.Persistence;
 using Sasd.Pims.Application.Recovery;
+using Sasd.Pims.Application.Requirements;
 using Sasd.Pims.Infrastructure.Recovery;
+using Sasd.Pims.Infrastructure.References;
 
 internal static class Program
 {
@@ -55,6 +57,8 @@ internal static class Program
                 .GetResult();
             var repository = new SqliteProjectRepository(contextFactory);
             var blockerRepository = new SqliteProjectBlockerRepository(contextFactory);
+            var requirementRepository = new SqliteRequirementRepository(contextFactory);
+            var referenceRepository = new SqliteExternalReferenceRepository(contextFactory);
             var failureHandler = new OperationFailureHandler(
                 loggerFactory.CreateLogger<OperationFailureHandler>());
             var mainForm = new MainForm(
@@ -68,6 +72,12 @@ internal static class Program
                 new ListProjectBlockers(blockerRepository, failureHandler),
                 new AddProjectBlocker(repository, blockerRepository, TimeProvider.System, failureHandler),
                 new ResolveProjectBlocker(blockerRepository, TimeProvider.System, failureHandler),
+                new ListRequirements(requirementRepository, failureHandler),
+                new CreateRequirement(repository, requirementRepository, referenceRepository, failureHandler),
+                new UpdateRequirement(requirementRepository, referenceRepository, failureHandler),
+                new ListExternalReferences(referenceRepository, failureHandler),
+                new SaveExternalReference(repository, requirementRepository, referenceRepository, failureHandler),
+                new OpenExternalReference(referenceRepository, new WindowsExternalReferenceOpener(), failureHandler),
                 new ExportProject(
                     repository,
                     new JsonProjectExportWriter(),

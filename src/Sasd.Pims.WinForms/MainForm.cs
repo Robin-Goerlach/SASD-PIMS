@@ -1,5 +1,6 @@
 using Sasd.Pims.Application.Projects;
 using Sasd.Pims.Application.Recovery;
+using Sasd.Pims.Application.Requirements;
 using System.Globalization;
 
 namespace Sasd.Pims.WinForms;
@@ -17,6 +18,12 @@ public sealed class MainForm : Form
     private readonly ListProjectBlockers _listBlockers;
     private readonly AddProjectBlocker _addBlocker;
     private readonly ResolveProjectBlocker _resolveBlocker;
+    private readonly ListRequirements _listRequirements;
+    private readonly CreateRequirement _createRequirement;
+    private readonly UpdateRequirement _updateRequirement;
+    private readonly ListExternalReferences _listReferences;
+    private readonly SaveExternalReference _saveReference;
+    private readonly OpenExternalReference _openReference;
     private readonly ExportProject _export;
     private readonly CreateDatabaseBackup _backup;
     private readonly RestoreDatabaseBackup _restore;
@@ -32,6 +39,7 @@ public sealed class MainForm : Form
     private readonly Button _archiveButton = new();
     private readonly Button _steeringButton = new();
     private readonly Button _blockersButton = new();
+    private readonly Button _requirementsButton = new();
     private readonly ToolStripStatusLabel _status = new("Bereit");
     private ProjectDto? _selected;
 
@@ -39,6 +47,9 @@ public sealed class MainForm : Form
         UpdateProject updateProject, SetProjectArchiveState archiveProject,
         UpdateProjectSteering updateSteering, MarkProjectReviewed markReviewed,
         ListProjectBlockers listBlockers, AddProjectBlocker addBlocker, ResolveProjectBlocker resolveBlocker,
+        ListRequirements listRequirements, CreateRequirement createRequirement, UpdateRequirement updateRequirement,
+        ListExternalReferences listReferences, SaveExternalReference saveReference,
+        OpenExternalReference openReference,
         ExportProject exportProject,
         CreateDatabaseBackup createBackup, RestoreDatabaseBackup restoreBackup, string databasePath,
         string rollbackDirectory, string applicationVersion)
@@ -53,6 +64,12 @@ public sealed class MainForm : Form
         _listBlockers = listBlockers;
         _addBlocker = addBlocker;
         _resolveBlocker = resolveBlocker;
+        _listRequirements = listRequirements;
+        _createRequirement = createRequirement;
+        _updateRequirement = updateRequirement;
+        _listReferences = listReferences;
+        _saveReference = saveReference;
+        _openReference = openReference;
         _export = exportProject;
         _backup = createBackup;
         _restore = restoreBackup;
@@ -82,11 +99,12 @@ public sealed class MainForm : Form
         _archiveButton.Text = "&Archivieren"; Configure(_archiveButton, "Projekt archivieren oder reaktivieren", ArchiveClicked);
         _steeringButton.Text = "&Steuerung"; Configure(_steeringButton, "Status, Termin und Review bearbeiten", SteeringClicked);
         _blockersButton.Text = "&Blocker"; Configure(_blockersButton, "Blocker und Verlauf bearbeiten", BlockersClicked);
+        _requirementsButton.Text = "&Anforderungen"; Configure(_requirementsButton, "Anforderungen und Referenzen bearbeiten", RequirementsClicked);
         var export = Button("&JSON exportieren", "Ausgewähltes Projekt als JSON exportieren", ExportClicked);
         var backup = Button("&Sicherung", "Datenbanksicherung erstellen", BackupClicked);
         var restore = Button("&Wiederherstellen", "Datenbanksicherung wiederherstellen", RestoreClicked);
         var commands = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top };
-        commands.Controls.AddRange([newButton, _edit, _steeringButton, _blockersButton, _archiveButton, export, backup, restore]);
+        commands.Controls.AddRange([newButton, _edit, _steeringButton, _blockersButton, _requirementsButton, _archiveButton, export, backup, restore]);
 
         _search.Dock = DockStyle.Fill;
         _search.AccessibleName = "Projekte nach Kennung oder Name suchen";
@@ -138,6 +156,11 @@ public sealed class MainForm : Form
         var statusStrip = new StatusStrip();
         statusStrip.Items.Add(_status);
         var menu = new MenuStrip();
+        var projectMenu = new ToolStripMenuItem("&Projekt");
+        var requirementsMenu = new ToolStripMenuItem("&Anforderungen und Referenzen");
+        requirementsMenu.Click += RequirementsClicked;
+        projectMenu.DropDownItems.Add(requirementsMenu);
+        menu.Items.Add(projectMenu);
         var helpMenu = new ToolStripMenuItem("&Hilfe");
         var glossary = new ToolStripMenuItem("&Hilfe und Glossar (F1)");
         glossary.Click += (_, _) => { using var help = new HelpForm(); help.ShowDialog(this); };
@@ -226,6 +249,14 @@ public sealed class MainForm : Form
         await RefreshProjectsAsync(_selected.Id);
     }
 
+    private void RequirementsClicked(object? sender, EventArgs e)
+    {
+        if (_selected is null) { _status.Text = "Bitte wählen Sie ein Projekt aus."; return; }
+        using var dialog = new RequirementsForm(_selected, _listRequirements, _createRequirement,
+            _updateRequirement, _listReferences, _saveReference, _openReference);
+        dialog.ShowDialog(this);
+    }
+
     private async Task SelectionChangedAsync()
     {
         if (_projects.SelectedItem is not ProjectSummaryDto summary)
@@ -248,6 +279,7 @@ public sealed class MainForm : Form
         _archiveButton.Enabled = enabled;
         _steeringButton.Enabled = enabled;
         _blockersButton.Enabled = enabled;
+        _requirementsButton.Enabled = enabled;
         if (enabled) _archiveButton.Text = _selected!.IsArchived ? "&Reaktivieren" : "&Archivieren";
     }
 

@@ -6,6 +6,22 @@ The project intends to follow [Semantic Versioning](https://semver.org/) once re
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-20
+
+### Added
+- Project-bound Requirements with immutable project-local keys, controlled priority, decision state and source.
+- Persistently ordered acceptance criteria with optional verification references.
+- Project and Requirement references with controlled semantic types and same-Project ownership rules.
+- Central HTTPS/local/GitHub target validation, target-string secret rejection and safe OS opening.
+- Native German Requirement/reference workspace, menu entry, F1 glossary and accessibility metadata.
+- Additive real-SQLite migration from the released 0.2 schema.
+
+### Changed
+- Current database schema is `202608200003_RequirementsAndTypedReferences`.
+
+### Security
+- Reference targets are allowlisted by type and revalidated before opening; PIMS performs no network probe.
+
 ## [0.2.0] - 2026-08-20
 
 ### Added
