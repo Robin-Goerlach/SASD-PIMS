@@ -150,6 +150,11 @@ public sealed class WinFormsBaselineTests
 
         public Task<IReadOnlyList<Project>> ListAsync(CancellationToken cancellationToken) =>
             Task.FromResult<IReadOnlyList<Project>>([]);
+
+        public Task<ProjectWriteResult> UpdateAsync(
+            Project project,
+            int expectedRevision,
+            CancellationToken cancellationToken) => Task.FromResult(ProjectWriteResult.Saved);
     }
 
     private sealed class NoOpExportWriter : IProjectExportWriter

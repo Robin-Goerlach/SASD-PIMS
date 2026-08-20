@@ -71,6 +71,13 @@ public sealed class JsonProjectExportTests
             "EXPORT-DEMO",
             "Export demo",
             "Synthetic",
+            null,
+            null,
+            null,
+            null,
+            null,
+            [],
+            false,
             ExportedAt.AddDays(-1),
             ExportedAt.AddHours(-1),
             2);

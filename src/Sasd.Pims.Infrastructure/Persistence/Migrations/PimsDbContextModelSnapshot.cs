@@ -14,6 +14,7 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity<ProjectRecord>(entity =>
         {
+            entity.Property(project => project.Benefit).HasColumnType("TEXT");
             entity.Property(project => project.Id)
                 .ValueGeneratedNever()
                 .HasColumnType("TEXT");
@@ -24,6 +25,11 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
                 .HasColumnType("TEXT");
             entity.Property(project => project.ModifiedAtUtc).HasColumnType("TEXT");
             entity.Property(project => project.Name).IsRequired().HasColumnType("TEXT");
+            entity.Property(project => project.Goal).HasColumnType("TEXT");
+            entity.Property(project => project.IsArchived).HasColumnType("INTEGER");
+            entity.Property(project => project.ProjectArea).HasMaxLength(32).HasColumnType("TEXT");
+            entity.Property(project => project.ProjectType).HasMaxLength(32).HasColumnType("TEXT");
+            entity.Property(project => project.Responsibility).HasColumnType("TEXT");
             entity.Property(project => project.Revision)
                 .IsConcurrencyToken()
                 .HasColumnType("INTEGER");
@@ -31,6 +37,16 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
             entity.HasKey(project => project.Id);
             entity.HasIndex(project => project.Key).IsUnique();
             entity.ToTable("Projects");
+        });
+
+        modelBuilder.Entity<ProjectTagRecord>(entity =>
+        {
+            entity.Property(tag => tag.ProjectId).HasColumnType("TEXT");
+            entity.Property(tag => tag.Value).IsRequired().HasMaxLength(32).HasColumnType("TEXT").UseCollation("NOCASE");
+            entity.HasKey(tag => new { tag.ProjectId, tag.Value });
+            entity.ToTable("ProjectTags");
+            entity.HasOne(tag => tag.Project).WithMany(project => project.Tags)
+                .HasForeignKey(tag => tag.ProjectId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
