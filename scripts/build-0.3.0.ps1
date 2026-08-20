@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [switch]$SkipTests,
+    [switch]$SkipVulnerabilityCheck
+)
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -22,12 +25,46 @@ New-Item -ItemType Directory -Path $packageRoot -Force | Out-Null
 
 Push-Location $repositoryRoot
 try {
-    Invoke-DotNet @('clean', 'Sasd.Pims.slnx', '-c', 'Release', '--disable-build-servers')
-    Invoke-DotNet @('restore', 'Sasd.Pims.slnx', '--disable-build-servers')
+    # Cleaning the solution in parallel can race while shared project outputs are
+    # removed by multiple test-project dependency graphs.
+    Invoke-DotNet @('clean', 'Sasd.Pims.slnx', '-c', 'Release', '--disable-build-servers', '-m:1')
+    Invoke-DotNet @('restore', 'Sasd.Pims.slnx', '--disable-build-servers', '-m:1')
     Invoke-DotNet @('build', 'Sasd.Pims.slnx', '-c', 'Release', '--no-restore', '--disable-build-servers', '-m:1', '-p:UseSharedCompilation=false')
-    Invoke-DotNet @('test', 'Sasd.Pims.slnx', '-c', 'Release', '--no-build')
-    Invoke-DotNet @('package', 'list', '--vulnerable', '--include-transitive')
-    Invoke-DotNet @('publish', 'src/Sasd.Pims.WinForms/Sasd.Pims.WinForms.csproj', '-c', 'Release', '-r', 'win-x64', '--self-contained', 'true', '-o', $publishRoot, '--disable-build-servers', '-m:1', '-p:UseSharedCompilation=false')
+    # Run the built xUnit v3 executables sequentially. The .NET 10 solution-level
+    # MTP orchestrator can leave parallel Windows test hosts waiting after all
+    # tests completed, while the in-process runners terminate deterministically.
+    if (-not $SkipTests) {
+        $testTempRoot = Join-Path $artifactsRoot 'test-temp'
+        New-Item -ItemType Directory -Path $testTempRoot -Force | Out-Null
+        $previousTemp = $env:TEMP
+        $previousTmp = $env:TMP
+        try {
+            $env:TEMP = $testTempRoot
+            $env:TMP = $testTempRoot
+            foreach ($testExecutable in @(
+                'tests/Sasd.Pims.Domain.Tests/bin/Release/net10.0/Sasd.Pims.Domain.Tests.exe',
+                'tests/Sasd.Pims.Application.Tests/bin/Release/net10.0/Sasd.Pims.Application.Tests.exe',
+                'tests/Sasd.Pims.IntegrationTests/bin/Release/net10.0/Sasd.Pims.IntegrationTests.exe',
+                'tests/Sasd.Pims.Architecture.Tests/bin/Release/net10.0/Sasd.Pims.Architecture.Tests.exe',
+                'tests/Sasd.Pims.WinForms.Tests/bin/Release/net10.0-windows/Sasd.Pims.WinForms.Tests.exe'
+            )) {
+                & $testExecutable
+                if ($LASTEXITCODE -ne 0) { throw "Test executable failed with exit code ${LASTEXITCODE}: $testExecutable" }
+            }
+        }
+        finally {
+            $env:TEMP = $previousTemp
+            $env:TMP = $previousTmp
+        }
+        Remove-Item -LiteralPath $testTempRoot -Recurse -Force
+    }
+    if (-not $SkipVulnerabilityCheck) {
+        Invoke-DotNet @('package', 'list', '--vulnerable', '--include-transitive')
+    }
+    # The explicit gate above owns vulnerability auditing. Restore the RID graph
+    # without a second network audit so packaging also works in restricted CI.
+    Invoke-DotNet @('restore', 'src/Sasd.Pims.WinForms/Sasd.Pims.WinForms.csproj', '-r', 'win-x64', '--disable-build-servers', '-m:1', '-p:NuGetAudit=false')
+    Invoke-DotNet @('publish', 'src/Sasd.Pims.WinForms/Sasd.Pims.WinForms.csproj', '-c', 'Release', '-r', 'win-x64', '--self-contained', 'true', '-o', $publishRoot, '--no-restore', '--disable-build-servers', '-m:1', '-p:UseSharedCompilation=false')
 
     Copy-Item -Path (Join-Path $publishRoot '*') -Destination $packageRoot -Recurse
     Copy-Item -LiteralPath 'LICENSE' -Destination $packageRoot
