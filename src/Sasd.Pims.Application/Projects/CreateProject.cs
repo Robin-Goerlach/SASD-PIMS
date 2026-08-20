@@ -3,6 +3,7 @@ using Sasd.Pims.Application.Diagnostics;
 
 namespace Sasd.Pims.Application.Projects;
 
+/// <summary>Validates and persists a new project master record.</summary>
 public sealed class CreateProject(
     IProjectRepository repository,
     TimeProvider timeProvider,
@@ -20,6 +21,12 @@ public sealed class CreateProject(
                 command.Key,
                 command.Name,
                 command.ShortDescription,
+                command.Goal,
+                command.Benefit,
+                command.ProjectType,
+                command.ProjectArea,
+                command.Responsibility,
+                command.Tags,
                 timeProvider.GetUtcNow());
         }
         catch (DomainValidationException exception)

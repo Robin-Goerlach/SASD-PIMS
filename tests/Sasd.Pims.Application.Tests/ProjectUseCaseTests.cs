@@ -82,6 +82,55 @@ public sealed class ProjectUseCaseTests
     }
 
     [Fact]
+    public async Task UpdatePreservesKeyAndReturnsCompleteMasterData()
+    {
+        var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, Now.AddMinutes(-1));
+        var repository = new ProjectRepositoryFake { ProjectToLoad = project };
+        var useCase = new UpdateProject(repository, new FixedTimeProvider(Now), FailureHandler());
+
+        var result = await useCase.ExecuteAsync(new(project.Id, 1, "Renamed", "Short", "Goal",
+            "Benefit", "software", "internal", "Team", ["local"]), TestContext.Current.CancellationToken);
+
+        Assert.Equal(ProjectOperationStatus.Success, result.Status);
+        Assert.Equal("DEMO", result.Value?.Key);
+        Assert.Equal("SOFTWARE", result.Value?.ProjectType);
+        Assert.Equal(2, result.Value?.Revision);
+        Assert.Single(repository.UpdatedProjects);
+    }
+
+    [Fact]
+    public async Task StaleUpdateReturnsConflictWithoutWriting()
+    {
+        var project = Project.Reconstitute(Guid.NewGuid(), "DEMO", "Demo", null,
+            Now.AddMinutes(-2), Now.AddMinutes(-1), 2);
+        var repository = new ProjectRepositoryFake { ProjectToLoad = project };
+        var useCase = new UpdateProject(repository, new FixedTimeProvider(Now), FailureHandler());
+
+        var result = await useCase.ExecuteAsync(new(project.Id, 1, "Stale", null, null, null,
+            null, null, null, []), TestContext.Current.CancellationToken);
+
+        Assert.Equal(ProjectOperationStatus.Conflict, result.Status);
+        Assert.Empty(repository.UpdatedProjects);
+    }
+
+    [Fact]
+    public async Task ArchiveAndReactivateRemainDiscoverable()
+    {
+        var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, Now.AddMinutes(-1));
+        var repository = new ProjectRepositoryFake { ProjectToLoad = project };
+        var useCase = new SetProjectArchiveState(repository, new FixedTimeProvider(Now), FailureHandler());
+
+        var archived = await useCase.ExecuteAsync(project.Id, 1, true, TestContext.Current.CancellationToken);
+        var hidden = await new ListProjects(repository, FailureHandler()).ExecuteAsync(TestContext.Current.CancellationToken);
+        var visible = await new ListProjects(repository, FailureHandler()).ExecuteAsync(
+            new(IncludeArchived: true), TestContext.Current.CancellationToken);
+
+        Assert.True(archived.Value?.IsArchived);
+        Assert.Empty(hidden.Value!);
+        Assert.Single(visible.Value!);
+    }
+
+    [Fact]
     public async Task InfrastructureFailureHasCorrelatedSafeDiagnostic()
     {
         const string projectText = "Sensitive synthetic project text";
@@ -106,6 +155,8 @@ public sealed class ProjectUseCaseTests
     private sealed class ProjectRepositoryFake : IProjectRepository
     {
         public List<Project> AddedProjects { get; } = [];
+
+        public List<Project> UpdatedProjects { get; } = [];
 
         public ProjectWriteResult AddResult { get; init; } = ProjectWriteResult.Saved;
 
@@ -142,6 +193,16 @@ public sealed class ProjectUseCaseTests
             }
 
             return Task.FromResult<IReadOnlyList<Project>>(ProjectToLoad is null ? [] : [ProjectToLoad]);
+        }
+
+        public Task<ProjectWriteResult> UpdateAsync(
+            Project project,
+            int expectedRevision,
+            CancellationToken cancellationToken)
+        {
+            if (Failure is not null) return Task.FromException<ProjectWriteResult>(Failure);
+            UpdatedProjects.Add(project);
+            return Task.FromResult(ProjectWriteResult.Saved);
         }
     }
 
