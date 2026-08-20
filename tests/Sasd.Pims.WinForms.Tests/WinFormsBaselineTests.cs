@@ -67,12 +67,18 @@ public sealed class WinFormsBaselineTests
             var repository = new EmptyProjectRepository();
             var failures = new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance);
             var recovery = new NoOpRecoveryService();
+            var blockers = new EmptyBlockerRepository();
             using var form = new MainForm(
                 new CreateProject(repository, TimeProvider.System, failures),
                 new LoadProject(repository, failures),
                 new ListProjects(repository, failures),
                 new UpdateProject(repository, TimeProvider.System, failures),
                 new SetProjectArchiveState(repository, TimeProvider.System, failures),
+                new UpdateProjectSteering(repository, TimeProvider.System, failures),
+                new MarkProjectReviewed(repository, TimeProvider.System, failures),
+                new ListProjectBlockers(blockers, failures),
+                new AddProjectBlocker(repository, blockers, TimeProvider.System, failures),
+                new ResolveProjectBlocker(blockers, TimeProvider.System, failures),
                 new ExportProject(repository, new NoOpExportWriter(), TimeProvider.System, failures),
                 new(recovery, failures),
                 new(recovery, failures),
@@ -84,6 +90,29 @@ public sealed class WinFormsBaselineTests
             Assert.All(buttons, button => Assert.Contains('&', button.Text));
             Assert.All(buttons, button => Assert.False(string.IsNullOrWhiteSpace(button.AccessibleName)));
             Assert.Equal(AutoScaleMode.Dpi, form.AutoScaleMode);
+        });
+    }
+
+    [Fact]
+    public void SteeringAndHelpDialogsRemainKeyboardAndDpiAware()
+    {
+        RunInSta(() =>
+        {
+            var failures = new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance);
+            var project = Project.Create(Guid.NewGuid(), "UI", "UI test", null, DateTimeOffset.UtcNow.AddMinutes(-1));
+            var repository = new SingleProjectRepository(project);
+            using var steering = new ProjectSteeringForm(ProjectDto.FromDomain(project),
+                new UpdateProjectSteering(repository, TimeProvider.System, failures),
+                new MarkProjectReviewed(repository, TimeProvider.System, failures));
+            using var help = new HelpForm();
+
+            Assert.Equal(2, Descendants(steering).OfType<ComboBox>().Count());
+            Assert.All(Descendants(steering).OfType<ComboBox>(), control =>
+                Assert.False(string.IsNullOrWhiteSpace(control.AccessibleName)));
+            Assert.Equal(AutoScaleMode.Dpi, steering.AutoScaleMode);
+            Assert.Equal(AutoScaleMode.Dpi, help.AutoScaleMode);
+            Assert.Contains("14 Kalendertagen", Descendants(help).OfType<TextBox>().Single().Text,
+                StringComparison.Ordinal);
         });
     }
 
@@ -159,6 +188,18 @@ public sealed class WinFormsBaselineTests
             CancellationToken cancellationToken) => Task.FromResult(ProjectWriteResult.Saved);
     }
 
+    private sealed class SingleProjectRepository(Project project) : IProjectRepository
+    {
+        public Task<ProjectWriteResult> AddAsync(Project value, CancellationToken cancellationToken) =>
+            Task.FromResult(ProjectWriteResult.Saved);
+        public Task<Project?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+            Task.FromResult<Project?>(id == project.Id ? project : null);
+        public Task<IReadOnlyList<Project>> ListAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<Project>>([project]);
+        public Task<ProjectWriteResult> UpdateAsync(Project value, int expectedRevision,
+            CancellationToken cancellationToken) => Task.FromResult(ProjectWriteResult.Saved);
+    }
+
     private sealed class NoOpExportWriter : IProjectExportWriter
     {
         public Task WriteAsync(
@@ -167,6 +208,17 @@ public sealed class WinFormsBaselineTests
             DateTimeOffset exportedAtUtc,
             string applicationVersion,
             CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class EmptyBlockerRepository : IProjectBlockerRepository
+    {
+        public Task AddAsync(ProjectBlocker blocker, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<ProjectBlocker?> GetByIdAsync(Guid id, CancellationToken cancellationToken) => Task.FromResult<ProjectBlocker?>(null);
+        public Task<IReadOnlyList<ProjectBlocker>> ListByProjectAsync(Guid projectId, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<ProjectBlocker>>([]);
+        public Task<IReadOnlySet<Guid>> GetProjectIdsWithOpenBlockersAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
+        public Task<bool> ResolveAsync(ProjectBlocker blocker, CancellationToken cancellationToken) => Task.FromResult(false);
     }
 
     private sealed class NoOpRecoveryService :
