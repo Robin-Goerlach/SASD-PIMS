@@ -19,7 +19,7 @@ public sealed class RequirementEditorForm : Form
     private readonly ComboBox decision = new() { DropDownStyle = ComboBoxStyle.DropDownList, AccessibleName = "Entscheidungsstatus" };
     private readonly TextBox decisionReason = new() { AccessibleName = "Entscheidungsbegründung" };
     private readonly ComboBox sourceType = new() { DropDownStyle = ComboBoxStyle.DropDownList, AccessibleName = "Quelltyp" };
-    private readonly DateTimePicker sourceDate = new() { Format = DateTimePickerFormat.Short, ShowCheckBox = true, AccessibleName = "Quelldatum" };
+    private readonly DateTimePicker sourceDate = new() { Format = DateTimePickerFormat.Short, ShowCheckBox = true, Checked = false, AccessibleName = "Quelldatum" };
     private readonly TextBox sourceSummary = new() { AccessibleName = "Quellenkurzbeschreibung" };
     private readonly ComboBox sourceReference = new() { DropDownStyle = ComboBoxStyle.DropDownList, AccessibleName = "Quellenreferenz" };
     private readonly DataGridView criteria = new() { Dock = DockStyle.Fill, AutoGenerateColumns = false, AllowUserToAddRows = true, AccessibleName = "Akzeptanzkriterien" };

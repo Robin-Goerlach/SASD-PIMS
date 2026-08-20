@@ -47,8 +47,11 @@ public sealed class ExternalReferencesForm : Form
     {
         var result = await list.ExecuteAsync(projectId, requirementId);
         if (result.Value is null) { status.Text = "Referenzen konnten nicht geladen werden."; return; }
-        references.DataSource = result.Value.Select(item => new Row(item)).ToList();
-        status.Text = result.Value.Count == 0 ? "Keine Referenzen vorhanden." : $"{result.Value.Count} Referenz(en).";
+        var visibleReferences = requirementId is null
+            ? result.Value.Where(item => item.RequirementId is null).ToList()
+            : result.Value.ToList();
+        references.DataSource = visibleReferences.Select(item => new Row(item)).ToList();
+        status.Text = visibleReferences.Count == 0 ? "Keine Referenzen vorhanden." : $"{visibleReferences.Count} Referenz(en).";
     }
     private static Button Button(string text, string name, EventHandler clicked)
     { var button = new Button { Text = text, AccessibleName = name, AutoSize = true }; button.Click += clicked; return button; }
