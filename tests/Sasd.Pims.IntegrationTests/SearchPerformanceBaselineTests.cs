@@ -5,6 +5,9 @@ using Sasd.Pims.Domain.Projects;
 using Sasd.Pims.Domain.Requirements;
 using Sasd.Pims.Infrastructure.Persistence;
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
+using Sasd.Pims.Application.Diagnostics;
+using Sasd.Pims.Application.Projects;
 
 namespace Sasd.Pims.IntegrationTests;
 
@@ -29,6 +32,10 @@ public sealed class SearchPerformanceBaselineTests(ITestOutputHelper output)
             await SeedAsync(factory, TestContext.Current.CancellationToken);
             seedWatch.Stop();
             var reader = new SqliteSearchReader(factory);
+            var projectRepository = new SqliteProjectRepository(factory);
+            var blockerRepository = new SqliteProjectBlockerRepository(factory);
+            var projectList = new ListProjects(projectRepository, blockerRepository, TimeProvider.System,
+                new OperationFailureHandler(NullLogger<OperationFailureHandler>.Instance));
             var queries = new[]
             {
                 new SearchQuery("needle", Limit: 200),
@@ -38,19 +45,40 @@ public sealed class SearchPerformanceBaselineTests(ITestOutputHelper output)
                 new SearchQuery(null, ObjectType: SearchObjectType.Requirement, RequirementPriority: RequirementPriority.Must),
             };
             await reader.SearchAsync(queries[0], TestContext.Current.CancellationToken); // warm-up
-            var timings = new List<double>();
+            var timings = new List<(string Operation, double Milliseconds)>();
             foreach (var query in Enumerable.Range(0, 4).SelectMany(_ => queries))
             {
                 var watch = Stopwatch.StartNew();
                 _ = await reader.SearchAsync(query, TestContext.Current.CancellationToken);
-                watch.Stop(); timings.Add(watch.Elapsed.TotalMilliseconds);
+                watch.Stop(); timings.Add(("GlobalSearch", watch.Elapsed.TotalMilliseconds));
             }
-            timings.Sort();
-            var p95 = timings[(int)Math.Ceiling(timings.Count * 0.95) - 1];
-            output.WriteLine($"Environment={Environment.OSVersion}; CPU={Environment.ProcessorCount}; Framework={Environment.Version}");
-            output.WriteLine($"Dataset projects={ProjectCount}, requirements={RequirementCount}, references={ReferenceCount}, blockers={BlockerCount}, changeEvents={ChangeEventCount}");
-            output.WriteLine($"SeedMs={seedWatch.Elapsed.TotalMilliseconds:F1}; MinMs={timings[0]:F1}; MedianMs={timings[timings.Count / 2]:F1}; P95Ms={p95:F1}; MaxMs={timings[^1]:F1}");
+            foreach (var _ in Enumerable.Range(0, 5))
+            {
+                await MeasureAsync("ProjectList", () => projectList.ExecuteAsync(TestContext.Current.CancellationToken));
+                await MeasureAsync("CombinedProjectFilter", () => projectList.ExecuteAsync(new ProjectCatalogFilter(
+                    SearchText: "Project", Phase: ProjectPhase.Execution, ActivityState: ActivityState.Active),
+                    TestContext.Current.CancellationToken));
+                await MeasureAsync("ProjectContextLoad", () => projectRepository.GetByIdAsync(Id(1, 250),
+                    TestContext.Current.CancellationToken));
+            }
+            var ordered = timings.Select(item => item.Milliseconds).Order().ToArray();
+            var p95 = ordered[(int)Math.Ceiling(ordered.Length * 0.95) - 1];
+            Report($"Environment={Environment.OSVersion}; CPU={Environment.ProcessorCount}; Framework={Environment.Version}");
+            Report($"Dataset projects={ProjectCount}, requirements={RequirementCount}, references={ReferenceCount}, blockers={BlockerCount}, changeEvents={ChangeEventCount}");
+            Report($"SeedMs={seedWatch.Elapsed.TotalMilliseconds:F1}; MinMs={ordered[0]:F1}; MedianMs={ordered[ordered.Length / 2]:F1}; P95Ms={p95:F1}; MaxMs={ordered[^1]:F1}");
+            foreach (var group in timings.GroupBy(item => item.Operation))
+            {
+                var values = group.Select(item => item.Milliseconds).Order().ToArray();
+                Report($"Operation={group.Key}; MedianMs={values[values.Length / 2]:F1}; P95Ms={values[(int)Math.Ceiling(values.Length * .95) - 1]:F1}; MaxMs={values[^1]:F1}");
+            }
             Assert.True(p95 < 2000, $"Measured P95 {p95:F1} ms exceeds the 2,000 ms target.");
+
+            async Task MeasureAsync<T>(string operation, Func<Task<T>> action)
+            {
+                var watch = Stopwatch.StartNew(); await action(); watch.Stop();
+                timings.Add((operation, watch.Elapsed.TotalMilliseconds));
+            }
+            void Report(string value) { output.WriteLine(value); Console.WriteLine($"PERF: {value}"); }
         }
         finally
         {

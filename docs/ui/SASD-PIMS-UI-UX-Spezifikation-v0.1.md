@@ -368,3 +368,11 @@ Not before demonstrated need:
   controlled error status text.
 - Search, TreeView, filters and exports retain mnemonics, logical keyboard order, AccessibleName metadata,
   F1 glossary content, native controls and PerMonitorV2/DPI layout rules. No broad visual redesign is introduced.
+
+## 0.5 MVP qualification increment
+
+The Project menu exposes a read-only `Änderungsverlauf` grid with time, entity, readable identifier, event and
+already-redacted values. Help exposes read-only operating information for database, logs, application and recovery
+paths and explains user-selected backup/export destinations. The blocker workspace captures Cause, Impact,
+AffectedObject, NextAction and an optional same-Project ExternalTask choice. All use native DPI-aware controls,
+mnemonics and accessible names; no edit/delete audit action or path configuration is offered.

@@ -368,3 +368,11 @@ table. Existing 0.3 Projects, Requirements, AcceptanceCriteria, Blockers and Ext
 `OccurredAtUtc` and optional redacted `OldValue`/`NewValue` strings limited to 256 characters. Normal application
 writes append whitelisted events in the same persistence transaction as the business change. There is no normal
 update/delete path and the table is not an event-sourcing store.
+
+## 0.5 MVP qualification increment
+
+Migration `202608210005_FullMustMvp` is additive to the released 0.4 schema. `ProjectBlockers` receives nullable
+`Cause`, `Impact`, `AffectedObject`, `NextAction` and `ExternalTaskReferenceId` columns. Nullable storage is required
+to retain honest 0.2–0.4 history; new open blockers enforce required Impact/NextAction in the Domain. SQLite triggers
+enforce that a non-null task reference exists, is `ExternalTask`, belongs to the same Project and cannot be deleted
+while referenced. No historical values are invented and no import/future-domain table is created.

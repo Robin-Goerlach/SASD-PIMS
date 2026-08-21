@@ -390,3 +390,11 @@ The performance gate seeds 500 Projects, 10,000 Requirements, 20,000 ExternalRef
 10,000 ChangeEvents. Twenty representative warmed search/filter operations are measured and the observed P95 is
 compared with the two-second target. No FTS5 decision may be made without this evidence. Physical multi-monitor
 DPI, visible end-to-end navigation and user-observed Save-dialog behavior remain manual evidence.
+## 0.5 MVP qualification increment
+
+Automated qualification adds blocker required/optional rules, same-Project ExternalTask validation and database
+triggers, real 0.4-to-0.5 preservation, audit read projection, read-only operating-path/UI structure and Project
+list/combined-filter/context-load performance measurements. Import and damaged-import testing are not applicable to
+the MVP and remain with Release 1.1. Physical keyboard/DPI/monitor, shell, offline, clean-profile restore/install,
+endurance, two-configuration and usability/language checks are `PENDING` in
+`docs/releases/0.5.0/MANUAL-ACCEPTANCE.md` until actually executed.
