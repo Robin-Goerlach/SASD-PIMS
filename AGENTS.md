@@ -59,11 +59,11 @@ If two governing sources materially conflict and the baseline does not resolve t
 
 ## 2. Current active milestone
 
-**Active milestone: `0.4.0 — Search, traceability and portable exchange`**
+**Active milestone: `0.5.0 — Full MUST MVP`**
 
-`0.3.0 — Requirements and typed references` is implemented, verified, merged to `main`, tagged `v0.3.0` and released.
+`0.4.0 — Search, traceability and portable exchange` is implemented, verified, merged to `main`, tagged `v0.4.0` and released.
 
-Implement only `0.4.0` until the user explicitly approves transition to `0.5.0`.
+Implement only `0.5.0` until the user explicitly approves transition to `0.6.0`.
 
 The binding milestone sources are:
 
@@ -71,18 +71,19 @@ The binding milestone sources are:
 docs/implementation/DECISION-0.2.0-PROJECT-STEERING-SEMANTICS.md
 docs/implementation/DECISION-0.3.0-REQUIREMENTS-AND-REFERENCES.md
 docs/implementation/DECISION-0.4.0-SEARCH-TRACEABILITY-AND-EXCHANGE.md
-docs/codex/MILESTONE-0.4.0.md
+docs/implementation/DECISION-0.5.0-FULL-MUST-MVP.md
+docs/codex/MILESTONE-0.5.0.md
 ```
 
-Read the 0.4.0 decision note and milestone contract before implementing `0.4.0`. The earlier 0.2.0 and 0.3.0 decisions remain binding for existing semantics.
+Read the 0.5.0 decision note and milestone contract before implementing `0.5.0`. The earlier 0.2.0–0.4.0 decisions remain binding for existing semantics.
 
-### `0.4.0` objective
+### `0.5.0` objective
 
-Make accumulated PIMS information reliably searchable, navigable through existing relationships, selectively auditable and portable.
+Close and qualify every binding MUST-MVP requirement without introducing a new broad feature block.
 
-Required concepts and rules are defined by `docs/implementation/DECISION-0.4.0-SEARCH-TRACEABILITY-AND-EXCHANGE.md`. Preserve existing ownership and security rules. Use server-side read models, additive ChangeEvents, projected traceability and deterministic atomic exchange exports.
+Required concepts and reconciliations are defined by `docs/implementation/DECISION-0.5.0-FULL-MUST-MVP.md`. Preserve existing ownership, security, recovery and exchange rules.
 
-Do not introduce import, Requirement relationships, generic relationship/audit engines, FTS5 without measurement, embedded files, provider integration, report snapshots, event sourcing or `0.5.0` functionality.
+Do not introduce import, Requirement relationships, generic relationship/audit engines, internal Task management, FTS5 without measurement, embedded files, provider integration, event sourcing or `0.6.0+` functionality.
 
 ### Existing `0.2.0` semantics to preserve
 
@@ -162,9 +163,9 @@ Help text and source documentation must use the same domain semantics.
 
 Do not pull `0.5.0` or later functionality forward.
 
-During this explicitly authorized autonomous milestone run, Codex may implement, test, debug, create coherent commits and push the `codex/0.4.0` branch. Stop only for decisions that materially change product semantics, architecture, security/recovery guarantees, licence obligations, public exchange contracts, supported platform or milestone scope.
+During this explicitly authorized autonomous milestone run, Codex may implement, test, debug, create coherent commits and push the `codex/0.5.0` branch. Stop only for decisions that materially change product semantics, architecture, security/recovery guarantees, licence obligations, public exchange contracts, supported platform or milestone scope.
 
-Do not merge to `main`, create `v0.4.0`, publish a GitHub Release or begin `0.5.0` without explicit user approval.
+Do not merge to `main`, create `v0.5.0`, publish a GitHub Release or begin `0.6.0` without explicit user approval. Mandatory manual checks remain explicitly pending until actually performed.
 
 ---
 
