@@ -59,7 +59,8 @@ All numbered cases in `MANUAL-ACCEPTANCE.md` remain PENDING: complete keyboard a
 
 ## GitHub Quality
 
-Pending final pushed-branch run; this section will be updated only from an observed completed workflow.
+GitHub `Quality` run `32449450563` completed successfully for pushed commit `b747a8827f0b67af485ad0959b3927128480d841`:
+<https://github.com/Robin-Goerlach/SASD-PIMS/actions/runs/32449450563>.
 
 ## Technical debt
 
