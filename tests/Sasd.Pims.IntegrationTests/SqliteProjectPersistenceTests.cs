@@ -78,7 +78,7 @@ public sealed class SqliteProjectPersistenceTests
         var blockers = new SqliteProjectBlockerRepository(database.Factory);
         await projects.AddAsync(project, TestContext.Current.CancellationToken);
         var blocker = ProjectBlocker.Create(Guid.NewGuid(), project.Id, "External decision", "Waiting",
-            Now.AddMinutes(2));
+            null, "Validation delayed", null, "Request decision", null, Now.AddMinutes(2));
         await blockers.AddAsync(blocker, TestContext.Current.CancellationToken);
         blocker.Resolve(Now.AddMinutes(3), "Approved");
         Assert.True(await blockers.ResolveAsync(blocker, TestContext.Current.CancellationToken));

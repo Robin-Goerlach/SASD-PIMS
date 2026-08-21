@@ -7,6 +7,7 @@ using Sasd.Pims.Application.Requirements;
 using Sasd.Pims.Domain.Requirements;
 using Sasd.Pims.Application.Search;
 using Sasd.Pims.Application.Traceability;
+using Sasd.Pims.Application.Auditing;
 using Sasd.Pims.WinForms;
 using Xunit;
 
@@ -83,7 +84,7 @@ public sealed class WinFormsBaselineTests
                 new UpdateProjectSteering(repository, TimeProvider.System, failures),
                 new MarkProjectReviewed(repository, TimeProvider.System, failures),
                 new ListProjectBlockers(blockers, failures),
-                new AddProjectBlocker(repository, blockers, TimeProvider.System, failures),
+                new AddProjectBlocker(repository, blockers, references, TimeProvider.System, failures),
                 new ResolveProjectBlocker(blockers, TimeProvider.System, failures),
                 new ListRequirements(requirements, failures),
                 new CreateRequirement(repository, requirements, references, failures),
@@ -125,6 +126,25 @@ public sealed class WinFormsBaselineTests
             Assert.Equal(AutoScaleMode.Dpi, help.AutoScaleMode);
             Assert.Contains("14 Kalendertagen", Descendants(help).OfType<TextBox>().Single().Text,
                 StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public void AuditAndOperatingViewsAreReadOnlyKeyboardAndDpiAware()
+    {
+        RunInSta(() =>
+        {
+            using var audit = new ProjectHistoryForm(Guid.NewGuid(), "UI", new EmptyChangeEventReader());
+            using var operating = new OperatingInformationForm(new("C:\\data\\pims.db", "C:\\logs",
+                "C:\\app", "C:\\backups"));
+            var grid = Descendants(audit).OfType<DataGridView>().Single();
+            var paths = Descendants(operating).OfType<TextBox>().Single();
+            Assert.True(grid.ReadOnly);
+            Assert.False(grid.AllowUserToDeleteRows);
+            Assert.True(paths.ReadOnly);
+            Assert.Contains("vom Benutzer gewählt", paths.Text, StringComparison.Ordinal);
+            Assert.Equal(AutoScaleMode.Dpi, audit.AutoScaleMode);
+            Assert.Equal(AutoScaleMode.Dpi, operating.AutoScaleMode);
         });
     }
 
@@ -300,6 +320,12 @@ public sealed class WinFormsBaselineTests
     {
         public Task<SearchPage> SearchAsync(SearchQuery query, CancellationToken cancellationToken = default) =>
             Task.FromResult(new SearchPage([], 0, false));
+    }
+
+    private sealed class EmptyChangeEventReader : IChangeEventReader
+    {
+        public Task<IReadOnlyList<ProjectChangeEventRow>> ListByProjectAsync(Guid projectId,
+            CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<ProjectChangeEventRow>>([]);
     }
 
     private sealed class EmptyTraceabilityReader(Guid projectId) : ITraceabilityReader

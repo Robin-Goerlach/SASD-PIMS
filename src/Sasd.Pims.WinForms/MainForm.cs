@@ -4,6 +4,8 @@ using Sasd.Pims.Application.Requirements;
 using Sasd.Pims.Application.Search;
 using Sasd.Pims.Application.Traceability;
 using Sasd.Pims.Application.Exchange;
+using Sasd.Pims.Application.Auditing;
+using Sasd.Pims.Application.Diagnostics;
 using System.Globalization;
 
 namespace Sasd.Pims.WinForms;
@@ -36,6 +38,8 @@ public sealed class MainForm : Form
     private readonly SearchPims? _globalSearch;
     private readonly ITraceabilityReader? _traceability;
     private readonly IPortableExchangeService? _portableExchange;
+    private readonly IChangeEventReader? _changeEvents;
+    private readonly OperatingPathsInfo? _operatingPaths;
     private readonly ListBox _projects = new();
     private readonly TextBox _search = new();
     private readonly CheckBox _includeArchived = new();
@@ -65,7 +69,8 @@ public sealed class MainForm : Form
         ExportProject exportProject,
         CreateDatabaseBackup createBackup, RestoreDatabaseBackup restoreBackup, string databasePath,
         string rollbackDirectory, string applicationVersion, SearchPims? globalSearch = null,
-        ITraceabilityReader? traceability = null, IPortableExchangeService? portableExchange = null)
+        ITraceabilityReader? traceability = null, IPortableExchangeService? portableExchange = null,
+        IChangeEventReader? changeEvents = null, OperatingPathsInfo? operatingPaths = null)
     {
         _create = createProject;
         _load = loadProject;
@@ -92,6 +97,8 @@ public sealed class MainForm : Form
         _globalSearch = globalSearch;
         _traceability = traceability;
         _portableExchange = portableExchange;
+        _changeEvents = changeEvents;
+        _operatingPaths = operatingPaths;
         InitializeControls();
     }
 
@@ -196,6 +203,9 @@ public sealed class MainForm : Form
         var traceability = new ToolStripMenuItem("&Traceability");
         traceability.Click += TraceabilityClicked;
         projectMenu.DropDownItems.Add(traceability);
+        var history = new ToolStripMenuItem("Ä&nderungsverlauf");
+        history.Click += HistoryClicked;
+        projectMenu.DropDownItems.Add(history);
         menu.Items.Add(projectMenu);
         var viewMenu = new ToolStripMenuItem("&Ansicht");
         var globalSearch = new ToolStripMenuItem("&Globale Suche (Strg+F)") { ShortcutKeys = Keys.Control | Keys.F };
@@ -206,6 +216,13 @@ public sealed class MainForm : Form
         var glossary = new ToolStripMenuItem("&Hilfe und Glossar (F1)");
         glossary.Click += (_, _) => { using var help = new HelpForm(); help.ShowDialog(this); };
         helpMenu.DropDownItems.Add(glossary);
+        var operatingInformation = new ToolStripMenuItem("&Betriebsinformationen und Speicherorte");
+        operatingInformation.Click += (_, _) =>
+        {
+            if (_operatingPaths is null) { _status.Text = "Betriebsinformationen sind nicht verfügbar."; return; }
+            using var form = new OperatingInformationForm(_operatingPaths); form.ShowDialog(this);
+        };
+        helpMenu.DropDownItems.Add(operatingInformation);
         var about = new ToolStripMenuItem("&Über SASD PIMS");
         about.Click += (_, _) => MessageBox.Show(this, $"SASD PIMS {_version}\nLokaler Projektkatalog",
             "Über SASD PIMS", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -225,6 +242,14 @@ public sealed class MainForm : Form
             args.Handled = true;
         };
         SetSelectionState(false);
+    }
+
+    private void HistoryClicked(object? sender, EventArgs e)
+    {
+        if (_selected is null) { _status.Text = "Bitte wählen Sie ein Projekt aus."; return; }
+        if (_changeEvents is null) { _status.Text = "Änderungsverlauf ist nicht verfügbar."; return; }
+        using var form = new ProjectHistoryForm(_selected.Id, _selected.Key, _changeEvents);
+        form.ShowDialog(this);
     }
 
     private async void SearchClicked(object? sender, EventArgs e)
@@ -368,7 +393,7 @@ public sealed class MainForm : Form
     private async void BlockersClicked(object? sender, EventArgs e)
     {
         if (_selected is null) return;
-        using var dialog = new ProjectBlockersForm(_selected, _listBlockers, _addBlocker, _resolveBlocker);
+        using var dialog = new ProjectBlockersForm(_selected, _listBlockers, _addBlocker, _resolveBlocker, _listReferences);
         dialog.ShowDialog(this);
         await RefreshProjectsAsync(_selected.Id);
     }

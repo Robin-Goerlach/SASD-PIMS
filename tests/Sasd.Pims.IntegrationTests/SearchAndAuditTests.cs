@@ -24,7 +24,7 @@ public sealed class SearchAndAuditTests
         await projects.AddAsync(first, TestContext.Current.CancellationToken);
         await projects.AddAsync(second, TestContext.Current.CancellationToken);
         await new SqliteProjectBlockerRepository(database.Factory).AddAsync(ProjectBlocker.Create(Guid.NewGuid(),
-            first.Id, "needle blocker", "details", Now), TestContext.Current.CancellationToken);
+            first.Id, "needle blocker", "details", null, "impact", null, "next", null, Now), TestContext.Current.CancellationToken);
         var requirement = Requirement.Create(Guid.NewGuid(), first.Id, "REQ-001", "needle requirement", null,
             null, RequirementPriority.Should, RequirementDecisionStatus.Proposed, null,
             RequirementSourceType.Internal, null, null, null, []);
@@ -79,6 +79,8 @@ public sealed class SearchAndAuditTests
             TestContext.Current.CancellationToken);
         Assert.DoesNotContain(events, item => item.EventType is "Name" or "ShortDescription");
         Assert.Contains(events, item => item.EntityType == "Project" && item.EventType == "Phase");
+        Assert.Contains(events, item => item.EntityType == "Project" && item.ObjectIdentifier == "AUDIT");
+        Assert.Contains(events, item => item.EntityType == "Requirement" && item.ObjectIdentifier == "REQ-001");
         Assert.Contains(events, item => item.EntityType == "Requirement" && item.EventType == "DecisionReason" &&
             item.NewValue == "Present");
         Assert.Contains(events, item => item.EntityType == "ExternalReference" && item.EventType == "TargetChanged" &&
@@ -87,6 +89,48 @@ public sealed class SearchAndAuditTests
         Assert.DoesNotContain(sensitiveReason, serialized, StringComparison.Ordinal);
         Assert.DoesNotContain("old-secret", serialized, StringComparison.Ordinal);
         Assert.DoesNotContain("new-secret", serialized, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task MigrationFrom040PreservesLegacyBlockerWithoutInventingRequiredFacts()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        await using (var context = database.Factory.CreateDbContext())
+        {
+            // Recreate the released 0.4 boundary from the current additive schema.
+            await context.Database.ExecuteSqlRawAsync("""
+                DROP TRIGGER TR_ProjectBlockers_ExternalTask_Insert;
+                DROP TRIGGER TR_ProjectBlockers_ExternalTask_Update;
+                DROP TRIGGER TR_ExternalReferences_BlockerTask_Delete;
+                DROP INDEX IX_ProjectBlockers_ExternalTaskReferenceId;
+                ALTER TABLE ProjectBlockers DROP COLUMN Cause;
+                ALTER TABLE ProjectBlockers DROP COLUMN Impact;
+                ALTER TABLE ProjectBlockers DROP COLUMN AffectedObject;
+                ALTER TABLE ProjectBlockers DROP COLUMN NextAction;
+                ALTER TABLE ProjectBlockers DROP COLUMN ExternalTaskReferenceId;
+                DELETE FROM __EFMigrationsHistory WHERE MigrationId = '202608210005_FullMustMvp';
+                """, TestContext.Current.CancellationToken);
+        }
+        var project = Project.Create(Guid.NewGuid(), "UPGRADE-040", "Preserved", null, Now);
+        await new SqliteProjectRepository(database.Factory).AddAsync(project, TestContext.Current.CancellationToken);
+        var blockerId = Guid.NewGuid();
+        await using (var context = database.Factory.CreateDbContext())
+        {
+            await context.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO ProjectBlockers (Id, ProjectId, Summary, Details, CreatedAtUtc, ResolvedAtUtc, ResolutionNote)
+                VALUES ({blockerId}, {project.Id}, {"Legacy blocker"}, {"Legacy detail"}, {Now}, {null}, {null})
+                """, TestContext.Current.CancellationToken);
+        }
+
+        await new DatabaseMigrator(database.Factory).MigrateAsync(Path.Combine(database.Root, "backups"), "0.5.0",
+            TestContext.Current.CancellationToken);
+
+        var blocker = Assert.Single(await new SqliteProjectBlockerRepository(database.Factory)
+            .ListByProjectAsync(project.Id, TestContext.Current.CancellationToken));
+        Assert.Equal(blockerId, blocker.Id);
+        Assert.Equal("Legacy detail", blocker.Details);
+        Assert.Null(blocker.Impact);
+        Assert.Null(blocker.NextAction);
     }
 
     [Fact]

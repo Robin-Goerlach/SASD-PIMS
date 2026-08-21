@@ -10,7 +10,7 @@ namespace Sasd.Pims.Infrastructure.Recovery;
 public sealed class SqliteRecoveryService : IDatabaseBackupService, IDatabaseRestoreService
 {
     public const string BackupFormatVersion = "1.0-internal";
-    public const string CurrentSchemaVersion = "202608200004_SearchTraceabilityAndExchange";
+    public const string CurrentSchemaVersion = "202608210005_FullMustMvp";
     private const string DatabaseEntryName = "pims.db";
     private const string ManifestEntryName = "manifest.json";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };

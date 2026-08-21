@@ -69,6 +69,8 @@ public sealed class PortableExchangeService(IDbContextFactory<PimsDbContext> con
             blockers = blockers.Select(item => new
             {
                 id = item.Id, projectId = item.ProjectId, summary = item.Summary, details = item.Details,
+                cause = item.Cause, impact = item.Impact, affectedObject = item.AffectedObject,
+                nextAction = item.NextAction, externalTaskReferenceId = item.ExternalTaskReferenceId,
                 createdAtUtc = item.CreatedAtUtc, resolvedAtUtc = item.ResolvedAtUtc,
                 resolutionNote = item.ResolutionNote,
             }).ToArray(),
@@ -139,8 +141,15 @@ public sealed class PortableExchangeService(IDbContextFactory<PimsDbContext> con
         }
         builder.AppendLine("## Blockaden").AppendLine();
         foreach (var blocker in blockers)
-            builder.AppendLine($"- [{(blocker.ResolvedAtUtc is null ? "offen" : "aufgelöst")}] {Escape(blocker.Summary)}" +
-                (blocker.ResolutionNote is null ? string.Empty : $" — {Escape(blocker.ResolutionNote)}"));
+        {
+            builder.AppendLine($"- [{(blocker.ResolvedAtUtc is null ? "offen" : "aufgelöst")}] {Escape(blocker.Summary)}")
+                .AppendLine($"  - Ursache: {Escape(blocker.Cause) ?? "—"}")
+                .AppendLine($"  - Auswirkung: {Escape(blocker.Impact) ?? "Nicht im Altbestand erfasst"}")
+                .AppendLine($"  - Betroffenes Objekt: {Escape(blocker.AffectedObject) ?? "—"}")
+                .AppendLine($"  - Nächste Maßnahme: {Escape(blocker.NextAction) ?? (blocker.ResolvedAtUtc is null ? "Nicht im Altbestand erfasst" : "—")}")
+                .AppendLine($"  - Externe Aufgabe: {blocker.ExternalTaskReferenceId?.ToString("D") ?? "—"}")
+                .AppendLine($"  - Lösung: {Escape(blocker.ResolutionNote) ?? "—"}");
+        }
         if (blockers.Length == 0) builder.AppendLine("Keine.");
         builder.AppendLine().AppendLine("## Projekt-Referenzen").AppendLine();
         AppendReferences(builder, references.Where(item => item.RequirementId == null));

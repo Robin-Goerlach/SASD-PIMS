@@ -72,11 +72,14 @@ public sealed class SqliteProjectBlockerRepository(IDbContextFactory<PimsDbConte
     private static ProjectBlockerRecord ToRecord(ProjectBlocker blocker) => new()
     {
         Id = blocker.Id, ProjectId = blocker.ProjectId, Summary = blocker.Summary, Details = blocker.Details,
+        Cause = blocker.Cause, Impact = blocker.Impact, AffectedObject = blocker.AffectedObject,
+        NextAction = blocker.NextAction, ExternalTaskReferenceId = blocker.ExternalTaskReferenceId,
         CreatedAtUtc = blocker.CreatedAtUtc, ResolvedAtUtc = blocker.ResolvedAtUtc,
         ResolutionNote = blocker.ResolutionNote,
     };
 
     private static ProjectBlocker ToDomain(ProjectBlockerRecord record) => ProjectBlocker.Reconstitute(record.Id,
-        record.ProjectId, record.Summary, record.Details, record.CreatedAtUtc, record.ResolvedAtUtc,
+        record.ProjectId, record.Summary, record.Details, record.Cause, record.Impact, record.AffectedObject,
+        record.NextAction, record.ExternalTaskReferenceId, record.CreatedAtUtc, record.ResolvedAtUtc,
         record.ResolutionNote);
 }

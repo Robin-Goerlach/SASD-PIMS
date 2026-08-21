@@ -51,6 +51,7 @@ public sealed class PimsDbContext(DbContextOptions<PimsDbContext> options) : DbC
         blocker.Property(item => item.Summary).IsRequired();
         blocker.Property(item => item.CreatedAtUtc).IsRequired();
         blocker.HasIndex(item => new { item.ProjectId, item.ResolvedAtUtc });
+        blocker.HasIndex(item => item.ExternalTaskReferenceId);
         blocker.HasOne(item => item.Project).WithMany(item => item.Blockers).HasForeignKey(item => item.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 

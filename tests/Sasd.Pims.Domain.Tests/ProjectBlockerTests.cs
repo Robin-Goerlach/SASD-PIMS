@@ -11,7 +11,7 @@ public sealed class ProjectBlockerTests
     public void BlockerRetainsDetailsAndResolutionHistory()
     {
         var blocker = ProjectBlocker.Create(Guid.NewGuid(), Guid.NewGuid(), " Waiting for access ",
-            " Synthetic detail ", Now);
+            " Synthetic detail ", "Permission missing", "Work stopped", "Repository", "Request access", null, Now);
         blocker.Resolve(Now.AddHours(1), " Access granted ");
 
         Assert.False(blocker.IsOpen);
@@ -25,17 +25,28 @@ public sealed class ProjectBlockerTests
     public void BlankSummaryIsRejected()
     {
         var exception = Assert.Throws<DomainValidationException>(() =>
-            ProjectBlocker.Create(Guid.NewGuid(), Guid.NewGuid(), " ", null, Now));
+            ProjectBlocker.Create(Guid.NewGuid(), Guid.NewGuid(), " ", null, null, "Impact", null, "Act", null, Now));
         Assert.Contains(exception.Errors, error => error.Code == "BlockerSummaryRequired");
     }
 
     [Fact]
     public void ResolvingTwiceIsRejectedAndOriginalEvidenceRemains()
     {
-        var blocker = ProjectBlocker.Create(Guid.NewGuid(), Guid.NewGuid(), "Blocked", null, Now);
+        var blocker = ProjectBlocker.Create(Guid.NewGuid(), Guid.NewGuid(), "Blocked", null, null,
+            "Impact", null, "Act", null, Now);
         blocker.Resolve(Now.AddHours(1), "First resolution");
 
         Assert.Throws<DomainValidationException>(() => blocker.Resolve(Now.AddHours(2), "Overwrite"));
         Assert.Equal("First resolution", blocker.ResolutionNote);
+    }
+
+    [Theory]
+    [InlineData(null, "Act", "BlockerImpactRequired")]
+    [InlineData("Impact", null, "BlockerNextActionRequired")]
+    public void NewOpenBlockerRequiresImpactAndNextAction(string? impact, string? nextAction, string code)
+    {
+        var exception = Assert.Throws<DomainValidationException>(() => ProjectBlocker.Create(Guid.NewGuid(),
+            Guid.NewGuid(), "Blocked", null, null, impact, null, nextAction, null, Now));
+        Assert.Contains(exception.Errors, error => error.Code == code);
     }
 }

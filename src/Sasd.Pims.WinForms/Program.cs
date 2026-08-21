@@ -2,7 +2,6 @@ namespace Sasd.Pims.WinForms;
 
 using Sasd.Pims.Application.Projects;
 using Microsoft.Extensions.Logging;
-using Sasd.Pims.Application.Diagnostics;
 using Sasd.Pims.Infrastructure.Diagnostics;
 using Sasd.Pims.Infrastructure.Export;
 using Sasd.Pims.Infrastructure.Persistence;
@@ -11,6 +10,7 @@ using Sasd.Pims.Application.Requirements;
 using Sasd.Pims.Application.Search;
 using Sasd.Pims.Infrastructure.Recovery;
 using Sasd.Pims.Infrastructure.References;
+using Sasd.Pims.Application.Diagnostics;
 
 internal static class Program
 {
@@ -71,7 +71,7 @@ internal static class Program
                 new UpdateProjectSteering(repository, TimeProvider.System, failureHandler),
                 new MarkProjectReviewed(repository, TimeProvider.System, failureHandler),
                 new ListProjectBlockers(blockerRepository, failureHandler),
-                new AddProjectBlocker(repository, blockerRepository, TimeProvider.System, failureHandler),
+                new AddProjectBlocker(repository, blockerRepository, referenceRepository, TimeProvider.System, failureHandler),
                 new ResolveProjectBlocker(blockerRepository, TimeProvider.System, failureHandler),
                 new ListRequirements(requirementRepository, failureHandler),
                 new CreateRequirement(repository, requirementRepository, referenceRepository, failureHandler),
@@ -91,7 +91,10 @@ internal static class Program
                 version,
                 new SearchPims(new SqliteSearchReader(contextFactory)),
                 new SqliteTraceabilityReader(contextFactory),
-                new PortableExchangeService(contextFactory));
+                new PortableExchangeService(contextFactory),
+                new SqliteChangeEventReader(contextFactory),
+                new OperatingPathsInfo(databasePath, Path.Combine(applicationRoot, "logs"),
+                    AppContext.BaseDirectory, Path.Combine(applicationRoot, "backups")));
 
             System.Windows.Forms.Application.ThreadException += (_, eventArgs) =>
                 ReportUnhandled(logger, eventArgs.Exception);

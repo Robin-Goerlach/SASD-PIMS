@@ -30,7 +30,8 @@ public sealed class PortableExchangeTests
             project.Id, requirement.Id, ExternalReferenceType.LocalFile, "Local", localPath),
             TestContext.Current.CancellationToken);
         await new SqliteProjectBlockerRepository(database.Factory).AddAsync(ProjectBlocker.Create(Guid.NewGuid(),
-            project.Id, "Blocked", null, Now), TestContext.Current.CancellationToken);
+            project.Id, "Blocked", null, null, "Delivery delayed", null, "Escalate", null, Now),
+            TestContext.Current.CancellationToken);
 
         var service = new PortableExchangeService(database.Factory);
         var first = Path.Combine(database.Root, "first.json");

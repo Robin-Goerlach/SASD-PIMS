@@ -1,5 +1,7 @@
 using Sasd.Pims.Application.Projects;
+using Sasd.Pims.Application.Requirements;
 using Sasd.Pims.Domain.Projects;
+using Sasd.Pims.Domain.Requirements;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 using Sasd.Pims.Application.Diagnostics;
@@ -193,9 +195,11 @@ public sealed class ProjectUseCaseTests
         var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, Now.AddMinutes(-1));
         var projects = new ProjectRepositoryFake { ProjectToLoad = project };
         var blockers = new BlockerRepositoryFake();
-        var add = new AddProjectBlocker(projects, blockers, new FixedTimeProvider(Now), FailureHandler());
+        var references = new ReferenceRepositoryFake();
+        var add = new AddProjectBlocker(projects, blockers, references, new FixedTimeProvider(Now), FailureHandler());
 
-        var added = await add.ExecuteAsync(project.Id, "Decision missing", "Escalated",
+        var added = await add.ExecuteAsync(project.Id, "Decision missing", "Escalated", null,
+            "Delivery delayed", null, "Escalate decision", null,
             TestContext.Current.CancellationToken);
         var resolved = await new ResolveProjectBlocker(blockers, new FixedTimeProvider(Now.AddHours(1)), FailureHandler())
             .ExecuteAsync(added.Value!.Id, "Decision recorded", TestContext.Current.CancellationToken);
@@ -204,6 +208,23 @@ public sealed class ProjectUseCaseTests
         Assert.False(resolved.Value!.IsOpen);
         Assert.Equal("Decision recorded", resolved.Value.ResolutionNote);
         Assert.Single((await blockers.ListByProjectAsync(project.Id, TestContext.Current.CancellationToken)));
+    }
+
+    [Fact]
+    public async Task BlockerRejectsExternalTaskReferenceFromAnotherProject()
+    {
+        var project = Project.Create(Guid.NewGuid(), "DEMO", "Demo", null, Now.AddMinutes(-1));
+        var externalTask = ExternalReference.Create(Guid.NewGuid(), Guid.NewGuid(), null,
+            ExternalReferenceType.ExternalTask, "Task", "https://example.test/tasks/1");
+        var useCase = new AddProjectBlocker(new ProjectRepositoryFake { ProjectToLoad = project },
+            new BlockerRepositoryFake(), new ReferenceRepositoryFake { Reference = externalTask },
+            new FixedTimeProvider(Now), FailureHandler());
+
+        var result = await useCase.ExecuteAsync(project.Id, "Blocked", null, null, "Impact", null,
+            "Next", externalTask.Id, TestContext.Current.CancellationToken);
+
+        Assert.Equal(ProjectOperationStatus.ValidationFailed, result.Status);
+        Assert.Contains(result.Errors, error => error.Code == "BlockerExternalTaskReferenceInvalid");
     }
 
     private sealed class ProjectRepositoryFake : IProjectRepository
@@ -277,6 +298,20 @@ public sealed class ProjectUseCaseTests
             Task.FromResult(OpenProjectIds.Count > 0 ? OpenProjectIds :
                 (IReadOnlySet<Guid>)blockers.Where(blocker => blocker.IsOpen).Select(blocker => blocker.ProjectId).ToHashSet());
         public Task<bool> ResolveAsync(ProjectBlocker blocker, CancellationToken cancellationToken) => Task.FromResult(true);
+    }
+
+    private sealed class ReferenceRepositoryFake : IExternalReferenceRepository
+    {
+        public ExternalReference? Reference { get; init; }
+        public Task<RequirementWriteResult> AddAsync(ExternalReference reference, CancellationToken cancellationToken) =>
+            Task.FromResult(RequirementWriteResult.Saved);
+        public Task<RequirementWriteResult> UpdateAsync(ExternalReference reference, int expectedRevision,
+            CancellationToken cancellationToken) => Task.FromResult(RequirementWriteResult.Saved);
+        public Task<ExternalReference?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+            Task.FromResult(Reference?.Id == id ? Reference : null);
+        public Task<IReadOnlyList<ExternalReference>> ListByProjectAsync(Guid projectId,
+            CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ExternalReference>>(
+                Reference?.ProjectId == projectId ? [Reference] : []);
     }
 
     private static CreateProject CreateUseCase(IProjectRepository repository) =>

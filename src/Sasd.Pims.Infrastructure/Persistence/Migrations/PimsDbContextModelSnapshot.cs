@@ -52,11 +52,17 @@ public sealed class PimsDbContextModelSnapshot : ModelSnapshot
             entity.Property(blocker => blocker.ProjectId).HasColumnType("TEXT");
             entity.Property(blocker => blocker.Summary).IsRequired().HasColumnType("TEXT");
             entity.Property(blocker => blocker.Details).HasColumnType("TEXT");
+            entity.Property(blocker => blocker.Cause).HasColumnType("TEXT");
+            entity.Property(blocker => blocker.Impact).HasColumnType("TEXT");
+            entity.Property(blocker => blocker.AffectedObject).HasColumnType("TEXT");
+            entity.Property(blocker => blocker.NextAction).HasColumnType("TEXT");
+            entity.Property(blocker => blocker.ExternalTaskReferenceId).HasColumnType("TEXT");
             entity.Property(blocker => blocker.CreatedAtUtc).HasColumnType("TEXT");
             entity.Property(blocker => blocker.ResolvedAtUtc).HasColumnType("TEXT");
             entity.Property(blocker => blocker.ResolutionNote).HasColumnType("TEXT");
             entity.HasKey(blocker => blocker.Id);
             entity.HasIndex(blocker => new { blocker.ProjectId, blocker.ResolvedAtUtc });
+            entity.HasIndex(blocker => blocker.ExternalTaskReferenceId);
             entity.ToTable("ProjectBlockers");
             entity.HasOne(blocker => blocker.Project).WithMany(project => project.Blockers)
                 .HasForeignKey(blocker => blocker.ProjectId).OnDelete(DeleteBehavior.Cascade);
